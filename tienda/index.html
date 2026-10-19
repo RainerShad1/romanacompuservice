@@ -160,6 +160,36 @@
   .tag.off { background: var(--yellow); color: var(--black); }
   .tag.last { background: var(--black); color: var(--yellow); }
   .tag.out { background: var(--danger); color: #fff; }
+
+  /* ---------- Etiquetas animadas ---------- */
+  .tag { transition: transform .25s var(--ease); }
+  .card:hover .tag { transform: translateY(-1px) scale(1.06); }
+  .tag.off { position: relative; overflow: hidden; animation: tagPulse 2.6s ease-in-out infinite; box-shadow: 0 0 0 0 rgba(255,252,58,.7); }
+  .tag.off::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.9) 50%, transparent 70%); transform: translateX(-130%); animation: tagShine 3.2s ease-in-out infinite; }
+  @keyframes tagPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,252,58,.0); } 50% { box-shadow: 0 0 0 5px rgba(255,252,58,.45); } }
+  @keyframes tagShine { 0%, 55% { transform: translateX(-130%); } 85%, 100% { transform: translateX(130%); } }
+  .tag.last .lucide { animation: zapFlash 1.6s ease-in-out infinite; }
+  @keyframes zapFlash { 0%, 100% { opacity: 1; transform: scale(1); } 45% { opacity: .35; transform: scale(.85); } 55% { opacity: 1; transform: scale(1.25); } }
+  .tag.incart { margin-left: auto; background: var(--ok); color: #fff; box-shadow: 0 4px 12px -4px rgba(19,138,71,.6); }
+  .tag.incart.pop { animation: tagPop .6s var(--ease); }
+  @keyframes tagPop { 0% { transform: scale(.3); opacity: 0; } 55% { transform: scale(1.35); opacity: 1; } 100% { transform: scale(1); } }
+
+  /* ---------- Animación al agregar al carrito ---------- */
+  .fly { position: fixed; z-index: 90; width: 72px; height: 72px; margin: -36px 0 0 -36px; border-radius: 18px; background: var(--yellow); display: grid; place-items: center; pointer-events: none; box-shadow: 0 12px 30px -8px rgba(0,0,0,.45); overflow: hidden; }
+  .fly svg { width: 36px; height: 36px; color: var(--black); stroke-width: 1.8; }
+  .fly img { width: 100%; height: 100%; object-fit: cover; }
+  .float-num { position: fixed; z-index: 95; transform: translate(-50%, -50%); pointer-events: none; font-weight: 800; font-size: 20px; color: var(--black); background: var(--yellow); border: 2px solid var(--black); border-radius: 999px; padding: 2px 10px; animation: floatUp .9s var(--ease) forwards; box-shadow: 0 8px 18px -6px rgba(0,0,0,.35); }
+  .float-num.minus { background: #fff; color: var(--danger); border-color: var(--danger); }
+  @keyframes floatUp { 0% { opacity: 0; transform: translate(-50%, -20%) scale(.5); } 20% { opacity: 1; transform: translate(-50%, -80%) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -260%) scale(.9); } }
+  .spark { position: fixed; z-index: 94; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; pointer-events: none; }
+  .btn.added { background: var(--ok) !important; color: #fff !important; animation: addedPop .45s var(--ease); }
+  @keyframes addedPop { 0% { transform: scale(.92); } 50% { transform: scale(1.06); } 100% { transform: scale(1); } }
+  .cart-hit { animation: cartHit .6s var(--ease); }
+  @keyframes cartHit { 0% { transform: scale(1); } 30% { transform: scale(1.22) rotate(-8deg); } 60% { transform: scale(.94) rotate(4deg); } 100% { transform: scale(1); } }
+  .qty-tick { display: inline-block; animation: qtyTick .35s var(--ease); }
+  .qty-tick.down { animation-name: qtyTickDown; }
+  @keyframes qtyTick { 0% { transform: translateY(70%); opacity: 0; } 100% { transform: none; opacity: 1; } }
+  @keyframes qtyTickDown { 0% { transform: translateY(-70%); opacity: 0; } 100% { transform: none; opacity: 1; } }
   .card .body { padding: 2px 4px 0; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   .cat { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
   .name { font-weight: 700; font-size: 14px; line-height: 1.35; cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 38px; }
@@ -516,6 +546,7 @@ function card(p) {
       <div class="tags">
         ${p.oferta && available(p) ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}
         ${low ? `<span class="tag last">${ic("zap")}Últimas</span>` : ""}
+        ${inCartQty(p.id) ? `<span class="tag incart" data-incart="${p.id}">${ic("shopping-bag")}${inCartQty(p.id)}</span>` : ""}
         ${!available(p) ? '<span class="tag out">Agotado</span>' : ""}
       </div>
     </div>
@@ -665,7 +696,7 @@ function renderCart() {
   $("#cartBody").innerHTML = lines.length ? lines.map((l) => `
     <div class="line"><div class="mini">${icon(l.p)}</div>
       <div><div class="t">${esc(l.p.nombre)}</div>
-        <div class="controls"><span class="stepper"><button data-action="cart-" data-id="${l.id}" aria-label="Menos">${ic("minus")}</button><span>${l.qty}</span><button data-action="cart+" data-id="${l.id}" aria-label="Más">${ic("plus")}</button></span>
+        <div class="controls"><span class="stepper"><button data-action="cart-" data-id="${l.id}" aria-label="Menos">${ic("minus")}</button><span data-cartqty="${l.id}">${l.qty}</span><button data-action="cart+" data-id="${l.id}" aria-label="Más">${ic("plus")}</button></span>
         <button class="trash" data-action="remove" data-id="${l.id}" aria-label="Quitar">${ic("trash-2")}</button></div></div>
       <strong>${money(finalPrice(l.p) * l.qty)}</strong></div>`).join("")
     : `<div class="empty">${ic("shopping-bag")}Tu carrito está vacío.<button class="btn btn-dark" data-action="catalog">Explorar productos</button></div>`;
@@ -689,14 +720,104 @@ const modalHead = (title, sub) => `<div class="modal-head"><div><h3>${title}</h3
 function wa(text) { window.open(waLink(text), "_blank", "noopener"); }
 function bumpBadge() { ["#cartCount", "#cartCount2"].forEach((s) => { const b = $(s); b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump"); }); }
 
-function addToCart(id, qty) {
+const inCartQty = (id) => (state.cart.find((l) => l.id === id) || {}).qty || 0;
+
+/* ======================================================
+   Animaciones del carrito
+   ====================================================== */
+const reduceMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const center = (r) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+
+/* "+1" / "-1" que sube y se desvanece */
+function floatNum(text, rect, minus = false) {
+  if (!rect || reduceMotion()) return;
+  const s = document.createElement("span");
+  s.className = "float-num" + (minus ? " minus" : "");
+  s.textContent = text;
+  const c = center(rect);
+  s.style.left = c.x + "px"; s.style.top = rect.top + "px";
+  document.body.appendChild(s);
+  s.addEventListener("animationend", () => s.remove());
+}
+
+/* Chispas amarillas y negras alrededor de un punto */
+function sparks(rect) {
+  if (!rect || reduceMotion()) return;
+  const c = center(rect);
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement("span");
+    d.className = "spark";
+    d.style.left = c.x + "px"; d.style.top = c.y + "px";
+    d.style.background = i % 3 ? "var(--yellow)" : "var(--black)";
+    document.body.appendChild(d);
+    const ang = (Math.PI * 2 * i) / 10 + Math.random() * .4, dist = 34 + Math.random() * 26;
+    d.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 },
+      { transform: `translate(${Math.cos(ang) * dist}px, ${Math.sin(ang) * dist}px) scale(.2)`, opacity: 0 }],
+      { duration: 550 + Math.random() * 200, easing: "cubic-bezier(.2,.8,.2,1)" }).onfinish = () => d.remove();
+  }
+}
+
+/* El carrito visible: barra inferior en celular, encabezado en computadora */
+function cartTarget() {
+  const tab = $("#tabbar [data-tab=cart]");
+  return tab && getComputedStyle($("#tabbar")).display !== "none" ? tab : $("header [data-action=cart]");
+}
+
+/* La foto (o ícono) del producto vuela en arco hasta el carrito */
+function flyToCart(fromRect, p, done) {
+  const target = cartTarget();
+  if (!fromRect || !target || reduceMotion()) return done && done();
+  const a = center(fromRect), b = center(target.getBoundingClientRect());
+  const g = document.createElement("div");
+  g.className = "fly";
+  g.innerHTML = icon(p);
+  g.style.left = a.x + "px"; g.style.top = a.y + "px";
+  document.body.appendChild(g);
+  refreshIcons();
+  const dx = b.x - a.x, dy = b.y - a.y, lift = Math.min(160, Math.abs(dx) * .35 + 60);
+  g.animate([
+    { transform: "translate(0,0) scale(.6) rotate(0)", opacity: 0 },
+    { transform: "translate(0,-12px) scale(1.05) rotate(-6deg)", opacity: 1, offset: .15 },
+    { transform: `translate(${dx * .5}px, ${dy * .5 - lift}px) scale(.8) rotate(8deg)`, offset: .55 },
+    { transform: `translate(${dx}px, ${dy}px) scale(.18) rotate(0)`, opacity: .7 },
+  ], { duration: 780, easing: "cubic-bezier(.45,0,.25,1)" }).onfinish = () => { g.remove(); done && done(); };
+}
+
+function hitCart() {
+  const t = cartTarget();
+  if (t) { t.classList.remove("cart-hit"); void t.offsetWidth; t.classList.add("cart-hit"); }
+  bumpBadge();
+}
+
+/* Botón "Agregar" → "¡Agregado!" por un momento */
+function markAdded(id) {
+  document.querySelectorAll(`[data-action="add"][data-id="${id}"]`).forEach((b) => {
+    b.classList.add("added");
+    b.innerHTML = `${ic("check")}¡Agregado!`;
+    clearTimeout(b._t);
+    b._t = setTimeout(() => { if (b.isConnected) { b.classList.remove("added"); b.innerHTML = `${ic("shopping-bag")}Agregar`; refreshIcons(); } }, 1400);
+  });
+  document.querySelectorAll(`[data-incart="${id}"]`).forEach((t) => t.classList.add("pop"));
+  refreshIcons();
+}
+
+function addToCart(id, qty, srcEl) {
   const p = byId(id);
   const line = state.cart.find((l) => l.id === id);
   const current = line ? line.qty : 0;
   const n = Math.min(qty, p.stock - current);
   if (n <= 0) { toast(`Máximo disponible: ${p.stock}`, "alert-circle"); return false; }
+  // Posiciones antes de re-dibujar (el re-dibujo reemplaza los elementos)
+  const holder = srcEl && (srcEl.closest(".card") || srcEl.closest(".modal"));
+  const thumb = holder && holder.querySelector(".thumb");
+  const fromRect = (thumb || srcEl)?.getBoundingClientRect();
+  const btnRect = srcEl?.getBoundingClientRect();
   line ? (line.qty += n) : state.cart.push({ id, qty: n });
-  save(); render(); bumpBadge(); toast("Agregado al carrito");
+  save(); render();
+  markAdded(id);
+  floatNum(`+${n}`, btnRect);
+  sparks(btnRect);
+  flyToCart(fromRect, p, hitCart);
   return true;
 }
 function markViewed(id) {
@@ -1066,14 +1187,29 @@ document.addEventListener("click", (e) => {
     case "cat": go({ view: "catalog", cat: el.dataset.val }); break;
     case "list": go({ view: "catalog", list: el.dataset.val }); break;
     case "scroll-cats": $("#catSections").scrollIntoView({ behavior: "smooth", block: "start" }); break;
-    case "qty+": state.qty[id] = Math.min((state.qty[id] || 1) + 1, p.stock); showDetail(id); break;
-    case "qty-": state.qty[id] = Math.max((state.qty[id] || 1) - 1, 1); showDetail(id); break;
-    case "add": if (addToCart(id, state.qty[id] || 1)) { state.qty[id] = 1; closeAll(); } break;
+    case "qty+": case "qty-": {
+      const up = el.dataset.action === "qty+", r = el.getBoundingClientRect(), before = state.qty[id] || 1;
+      state.qty[id] = up ? Math.min(before + 1, p.stock) : Math.max(before - 1, 1);
+      showDetail(id);
+      if (state.qty[id] !== before) floatNum(up ? "+1" : "-1", r, !up);
+      break;
+    }
+    case "add": if (addToCart(id, state.qty[id] || 1, el)) { state.qty[id] = 1; closeAll(); } break;
     case "buy": if (addToCart(id, state.qty[id] || 1) || state.cart.some((l) => l.id === id)) showCheckout(); break;
     case "detail": showDetail(id); break;
     case "cart": openPanel($("#cartDrawer")); break;
-    case "cart+": { const l = state.cart.find((x) => x.id === id); if (l.qty < p.stock) l.qty++; else toast(`Máximo disponible: ${p.stock}`, "alert-circle"); save(); render(); break; }
-    case "cart-": { const l = state.cart.find((x) => x.id === id); l.qty > 1 ? l.qty-- : (state.cart = state.cart.filter((x) => x.id !== id)); save(); render(); break; }
+    case "cart+": case "cart-": {
+      const up = el.dataset.action === "cart+", r = el.getBoundingClientRect();
+      const l = state.cart.find((x) => x.id === id);
+      if (up && l.qty >= p.stock) { toast(`Máximo disponible: ${p.stock}`, "alert-circle"); break; }
+      if (up) l.qty++; else if (l.qty > 1) l.qty--; else state.cart = state.cart.filter((x) => x.id !== id);
+      save(); render();
+      floatNum(up ? "+1" : "-1", r, !up);
+      if (up) hitCart();
+      const q = document.querySelector(`[data-cartqty="${id}"]`);
+      if (q) q.classList.add("qty-tick", ...(up ? [] : ["down"]));
+      break;
+    }
     case "remove": state.cart = state.cart.filter((x) => x.id !== id); save(); render(); break;
     case "checkout": showCheckout(); break;
     case "account": showAccount(); break;
