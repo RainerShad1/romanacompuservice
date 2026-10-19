@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Romana CompuService</title>
+<meta name="description" content="Romana CompuService: computadoras, repuestos, accesorios y servicio técnico en La Romana">
+<meta name="theme-color" content="#0a0a0a">
+<link rel="icon" href="logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f5f2;
+    --surface: #ffffff;
+    --surface-2: #f0f0ec;
+    --ink: #0f0f0f;
+    --ink-2: #3a3a3a;
+    --muted: #75756f;
+    --line: #e6e6e0;
+    --black: #0a0a0a;
+    --yellow: #fffc3a;
+    --yellow-2: #f5e900;
+    --yellow-soft: #fffbcc;
+    --ok: #138a47;
+    --ok-soft: #e4f6eb;
+    --warn: #b45309;
+    --danger: #d92d20;
+    --wa: #25d366;
+    --r-sm: 10px;
+    --r: 16px;
+    --r-lg: 24px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px -8px rgba(0,0,0,.12);
+    --shadow-lg: 0 24px 60px -20px rgba(0,0,0,.35);
+    --ease: cubic-bezier(.2,.8,.2,1);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  button { font: inherit; cursor: pointer; color: inherit; }
+  input, select, textarea { font: inherit; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+  .lucide { width: 1.15em; height: 1.15em; stroke-width: 2; flex-shrink: 0; vertical-align: middle; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---------- Announcement ---------- */
+  .announce { background: var(--black); color: #d9d9d4; font-size: 13px; }
+  .announce .wrap { display: flex; gap: 22px; justify-content: center; align-items: center; padding-top: 8px; padding-bottom: 8px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+  .announce span { display: inline-flex; align-items: center; gap: 6px; }
+  .announce .lucide { color: var(--yellow); width: 15px; height: 15px; }
+
+  /* ---------- Header ---------- */
+  header { position: sticky; top: 0; z-index: 30; background: rgba(255,255,255,.82); backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px); border-bottom: 1px solid var(--line); }
+  .bar { display: flex; gap: 14px; align-items: center; padding-top: 12px; padding-bottom: 12px; }
+  .logo { display: flex; align-items: center; gap: 10px; cursor: pointer; white-space: nowrap; }
+  .logo img { width: 42px; height: 42px; border-radius: 10px; display: block; }
+  .logo b { display: block; font-size: 16px; font-weight: 800; letter-spacing: -.2px; line-height: 1.1; }
+  .logo small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: .4px; text-transform: uppercase; }
+  .search { flex: 1; position: relative; max-width: 560px; margin: 0 auto; }
+  .search .lucide { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+  .search input { width: 100%; padding: 12px 16px 12px 42px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface-2); outline: none; transition: border-color .2s, box-shadow .2s, background .2s; }
+  .search input:focus { background: var(--surface); border-color: var(--black); box-shadow: 0 0 0 4px rgba(255,252,58,.6); }
+  .head-actions { display: flex; gap: 8px; }
+  .icon-btn { position: relative; display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; font-weight: 600; font-size: 14px; white-space: nowrap; transition: border-color .2s, transform .15s; }
+  .icon-btn:hover { border-color: var(--black); }
+  .icon-btn:active { transform: scale(.97); }
+  .icon-btn.dark { background: var(--black); color: #fff; border-color: var(--black); }
+  .badge { position: absolute; top: -5px; right: -5px; background: var(--yellow); color: var(--black); border: 2px solid var(--surface); font-size: 11px; font-weight: 800; border-radius: 999px; min-width: 22px; height: 22px; display: grid; place-items: center; padding: 0 5px; }
+  .badge.bump { animation: bump .4s var(--ease); }
+  @keyframes bump { 40% { transform: scale(1.35); } }
+  .cats-nav { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 12px; }
+  .cats-nav::-webkit-scrollbar { display: none; }
+  .chip { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 999px; white-space: nowrap; font-size: 13px; font-weight: 600; transition: all .2s; }
+  .chip:hover { border-color: var(--black); }
+  .chip.active { background: var(--black); color: var(--yellow); border-color: var(--black); }
+
+  main { padding-top: 20px; padding-bottom: 20px; }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; overflow: hidden; background: var(--black); color: #fff; border-radius: var(--r-lg); padding: clamp(28px, 5vw, 56px); display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center; isolation: isolate; }
+  .hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: linear-gradient(rgba(255,252,58,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,252,58,.07) 1px, transparent 1px); background-size: 36px 36px; mask-image: radial-gradient(ellipse at 70% 50%, #000 20%, transparent 75%); }
+  .hero::after { content: ""; position: absolute; right: -120px; top: -120px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgba(255,252,58,.35), transparent 65%); z-index: -1; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,252,58,.12); color: var(--yellow); border: 1px solid rgba(255,252,58,.3); padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+  .hero h1 { margin: 16px 0 10px; font-size: clamp(32px, 5.2vw, 58px); line-height: 1.02; letter-spacing: -1.5px; font-weight: 800; }
+  .hero h1 em { font-style: normal; color: var(--yellow); }
+  .hero p.lead { margin: 0 0 24px; color: #bdbdb6; font-size: clamp(15px, 1.6vw, 18px); max-width: 520px; line-height: 1.5; }
+  .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stats { display: flex; gap: 28px; margin-top: 28px; flex-wrap: wrap; }
+  .stats b { display: block; font-size: 22px; color: var(--yellow); }
+  .stats span { font-size: 13px; color: #9c9c95; }
+  .hero-art { position: relative; display: grid; place-items: center; }
+  .hero-art img { width: min(320px, 100%); border-radius: 22px; box-shadow: 0 30px 80px -20px rgba(255,252,58,.35); transform: rotate(-3deg); transition: transform .5s var(--ease); }
+  .hero-art img:hover { transform: rotate(0) scale(1.02); }
+  .float-card { position: absolute; background: var(--surface); color: var(--ink); border-radius: 14px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; box-shadow: var(--shadow-lg); }
+  .float-card .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--yellow); }
+  .float-card small { display: block; font-weight: 500; color: var(--muted); }
+  .float-card.a { left: 0; bottom: 18%; }
+  .float-card.b { right: 0; top: 10%; }
+
+  /* ---------- Buttons ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 12px; padding: 12px 18px; font-weight: 700; font-size: 14px; transition: transform .15s, box-shadow .2s, background .2s; white-space: nowrap; }
+  .btn:active { transform: scale(.97); }
+  .btn-yellow { background: var(--yellow); color: var(--black); box-shadow: 0 6px 20px -6px rgba(245,233,0,.7); }
+  .btn-yellow:hover { background: var(--yellow-2); }
+  .btn-dark { background: var(--black); color: #fff; }
+  .btn-dark:hover { background: #262626; }
+  .btn-glass { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.18); }
+  .btn-glass:hover { background: rgba(255,255,255,.15); }
+  .btn-outline { background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
+  .btn-outline:hover { border-color: var(--black); }
+  .btn-wa { background: var(--wa); color: #fff; }
+  .btn-block { width: 100%; }
+  .btn-lg { padding: 14px 22px; font-size: 15px; }
+
+  /* ---------- Features ---------- */
+  .features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+  .feature { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: flex; gap: 12px; align-items: center; }
+  .feature .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--black); color: var(--yellow); display: grid; place-items: center; flex-shrink: 0; }
+  .feature b { display: block; font-size: 14px; }
+  .feature span { font-size: 12.5px; color: var(--muted); }
+
+  /* ---------- Sections ---------- */
+  section.row { margin-top: 40px; }
+  .row-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .row-head .title { display: flex; align-items: center; gap: 12px; }
+  .row-head .ic { width: 40px; height: 40px; border-radius: 12px; background: var(--yellow); color: var(--black); display: grid; place-items: center; flex-shrink: 0; }
+  .row-head h2 { margin: 0; font-size: clamp(18px, 2.4vw, 22px); letter-spacing: -.4px; }
+  .row-head p { margin: 2px 0 0; color: var(--muted); font-size: 13.5px; }
+  .link { display: inline-flex; align-items: center; gap: 4px; background: none; border: 0; font-weight: 700; font-size: 14px; padding: 8px 4px; white-space: nowrap; }
+  .link:hover { text-decoration: underline; text-underline-offset: 4px; }
+  .scroller { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 250px); gap: 14px; overflow-x: auto; padding: 4px 2px 12px; scroll-snap-type: x mandatory; scrollbar-width: thin; }
+  .scroller > * { scroll-snap-align: start; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .empty { color: var(--muted); background: var(--surface); border: 1.5px dashed var(--line); border-radius: var(--r); padding: 28px 18px; text-align: center; display: grid; justify-items: center; gap: 8px; }
+  .empty .lucide { width: 28px; height: 28px; }
+
+  /* ---------- Category tiles ---------- */
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .cat-tile { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 14px; display: grid; justify-items: start; gap: 12px; text-align: left; transition: transform .2s var(--ease), border-color .2s, box-shadow .2s; }
+  .cat-tile:hover { transform: translateY(-3px); border-color: var(--black); box-shadow: var(--shadow); }
+  .cat-tile .ic { width: 48px; height: 48px; border-radius: 14px; background: var(--surface-2); display: grid; place-items: center; transition: background .2s; }
+  .cat-tile:hover .ic { background: var(--yellow); }
+  .cat-tile .ic .lucide { width: 24px; height: 24px; }
+  .cat-tile b { font-size: 13.5px; text-transform: capitalize; }
+  .cat-tile span { font-size: 12px; color: var(--muted); }
+
+  /* ---------- Product card ---------- */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; display: flex; flex-direction: column; gap: 8px; position: relative; transition: transform .25s var(--ease), box-shadow .25s, border-color .25s; }
+  .card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: transparent; }
+  .thumb { position: relative; aspect-ratio: 1/1; border-radius: 12px; background: radial-gradient(circle at 30% 20%, #ffffff, var(--surface-2) 70%); display: grid; place-items: center; cursor: pointer; overflow: hidden; }
+  .thumb .lucide { width: 38%; height: 38%; stroke-width: 1.4; color: var(--ink-2); transition: transform .4s var(--ease); }
+  .card:hover .thumb .lucide { transform: scale(1.08) rotate(-4deg); }
+  .thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .tags { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 4px 8px; }
+  .tag .lucide { width: 12px; height: 12px; }
+  .tag.off { background: var(--yellow); color: var(--black); }
+  .tag.last { background: var(--black); color: var(--yellow); }
+  .tag.out { background: var(--danger); color: #fff; }
+  .card .body { padding: 2px 4px 0; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .cat { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  .name { font-weight: 700; font-size: 14px; line-height: 1.35; cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 38px; }
+  .name:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .prices { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .price { font-size: 20px; font-weight: 800; letter-spacing: -.4px; }
+  .price-old { color: var(--muted); text-decoration: line-through; font-size: 13px; }
+  .stock { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ok); font-weight: 600; }
+  .stock.low { color: var(--warn); }
+  .stock .lucide { width: 13px; height: 13px; }
+  .buy-row { display: flex; gap: 8px; align-items: center; margin-top: auto; }
+  .stepper { display: inline-flex; align-items: center; background: var(--surface-2); border-radius: 10px; padding: 3px; }
+  .stepper button { border: 0; background: transparent; width: 30px; height: 32px; border-radius: 8px; display: grid; place-items: center; }
+  .stepper button:hover { background: var(--surface); }
+  .stepper button:disabled { opacity: .35; cursor: default; }
+  .stepper button .lucide { width: 14px; height: 14px; }
+  .stepper span { min-width: 22px; text-align: center; font-weight: 800; font-size: 14px; }
+  .add-btn { flex: 1; height: 38px; padding: 0 10px; }
+  .match { display: inline-flex; align-items: center; justify-content: center; gap: 5px; background: none; border: 0; color: var(--muted); font-size: 11.5px; font-weight: 600; padding: 4px; }
+  .match:hover { color: var(--ink); }
+  .match .lucide { width: 13px; height: 13px; }
+  .card.is-out .thumb { filter: grayscale(1); opacity: .6; }
+
+  /* ---------- Service banner ---------- */
+  .service { margin-top: 44px; background: var(--yellow); border-radius: var(--r-lg); padding: clamp(22px, 4vw, 40px); display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center; }
+  .service .ic { width: 72px; height: 72px; border-radius: 20px; background: var(--black); color: var(--yellow); display: grid; place-items: center; }
+  .service .ic .lucide { width: 34px; height: 34px; }
+  .service h3 { margin: 0 0 6px; font-size: clamp(20px, 3vw, 28px); letter-spacing: -.6px; }
+  .service p { margin: 0; color: #3d3b00; }
+  .service ul { margin: 10px 0 0; padding: 0; list-style: none; display: flex; gap: 14px; flex-wrap: wrap; font-size: 13.5px; font-weight: 600; }
+  .service li { display: inline-flex; align-items: center; gap: 6px; }
+
+  /* ---------- Drawer & modal ---------- */
+  .overlay { position: fixed; inset: 0; background: rgba(10,10,10,.5); backdrop-filter: blur(3px); z-index: 40; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(440px, 100%); background: var(--surface); z-index: 50; transform: translateX(100%); transition: transform .35s var(--ease); display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
+  .drawer.open { transform: none; }
+  .drawer-head { padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .drawer-head h3 { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 18px; }
+  .drawer-body { flex: 1; overflow-y: auto; padding: 14px 20px; display: grid; gap: 12px; align-content: start; }
+  .drawer-foot { padding: 16px 20px 20px; border-top: 1px solid var(--line); display: grid; gap: 10px; background: var(--surface-2); }
+  .line { display: grid; grid-template-columns: 60px 1fr auto; gap: 12px; align-items: center; }
+  .line + .line { border-top: 1px solid var(--line); padding-top: 12px; }
+  .mini { width: 60px; height: 60px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; overflow: hidden; }
+  .mini .lucide { width: 26px; height: 26px; stroke-width: 1.5; }
+  .mini img { width: 100%; height: 100%; object-fit: contain; }
+  .line .t { font-size: 13.5px; font-weight: 700; line-height: 1.3; margin-bottom: 6px; }
+  .line .controls { display: flex; align-items: center; gap: 8px; }
+  .trash { border: 0; background: none; color: var(--muted); width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; }
+  .trash:hover { color: var(--danger); background: #fdecea; }
+  .sum { display: flex; justify-content: space-between; font-size: 14px; }
+  .sum.save { color: var(--ok); font-weight: 700; }
+  .sum.total { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
+  .x { border: 0; background: var(--surface-2); width: 38px; height: 38px; border-radius: 999px; display: grid; place-items: center; }
+  .x:hover { background: var(--line); }
+  .modal { position: fixed; z-index: 60; left: 50%; top: 50%; width: min(500px, calc(100% - 24px)); max-height: calc(100% - 24px); overflow-y: auto; background: var(--surface); border-radius: var(--r-lg); padding: 22px; opacity: 0; pointer-events: none; transform: translate(-50%, -46%) scale(.98); transition: opacity .25s, transform .3s var(--ease); box-shadow: var(--shadow-lg); }
+  .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%); }
+  .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+  .modal-head h3 { margin: 0; font-size: 20px; letter-spacing: -.3px; }
+  .modal-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .detail-thumb { aspect-ratio: 16/10; margin-bottom: 14px; }
+  .detail-thumb .lucide { width: 30%; height: 30%; }
+  .perks-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
+  .perks-list div { background: var(--surface-2); border-radius: 12px; padding: 10px; font-size: 12px; font-weight: 600; display: grid; justify-items: center; gap: 4px; text-align: center; }
+  .detail-buy { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center; }
+  .detail-buy .stepper { height: 46px; }
+  .detail-buy .btn { height: 46px; }
+  .similar h4 { margin: 18px 0 10px; font-size: 14px; }
+  .similar .line { cursor: pointer; border-radius: 12px; }
+  .field { display: grid; gap: 6px; margin-bottom: 12px; font-size: 13px; font-weight: 700; }
+  .input { position: relative; }
+  .input .lucide { position: absolute; left: 12px; top: 13px; color: var(--muted); width: 18px; height: 18px; }
+  .field input, .field select, .field textarea { width: 100%; padding: 12px 14px 12px 40px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-weight: 500; outline: none; }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--black); box-shadow: 0 0 0 4px rgba(255,252,58,.6); }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .seg label { border: 1.5px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer; display: grid; gap: 4px; font-weight: 700; transition: border-color .2s, background .2s; }
+  .seg label small { color: var(--muted); font-weight: 500; }
+  .seg input { display: none; }
+  .seg label:has(input:checked) { border-color: var(--black); background: var(--yellow-soft); }
+  .note { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--muted); background: var(--surface-2); padding: 10px 12px; border-radius: 12px; margin-top: 10px; }
+  .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); border-radius: 12px; padding: 4px; margin-bottom: 16px; }
+  .auth-tabs button { border: 0; background: none; padding: 10px; border-radius: 9px; font-weight: 700; font-size: 14px; color: var(--muted); }
+  .auth-tabs button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
+  .hint { font-size: 12px; font-weight: 600; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; min-height: 16px; }
+  .hint.ok, .gps-status .ok { color: var(--ok); }
+  .hint.bad, .gps-status .bad { color: var(--danger); }
+  .hint .lucide { width: 14px; height: 14px; }
+  .check-row { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; margin: 4px 0 14px; cursor: pointer; }
+  .check-row input { width: 18px; height: 18px; accent-color: var(--black); }
+  .form-err { display: flex; gap: 8px; align-items: flex-start; background: #fdecea; color: var(--danger); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; margin-bottom: 12px; }
+  .form-err[hidden] { display: none; }
+  .loc-box, .loc-card { border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-bottom: 14px; background: var(--surface-2); }
+  .loc-box .field input { background: var(--surface); }
+  .loc-title { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; margin-bottom: 10px; }
+  .loc-card p { margin: 0 0 10px; font-size: 14px; color: var(--ink-2); }
+  .map-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; text-decoration: underline; margin-bottom: 10px; }
+  .gps-status { font-size: 12.5px; color: var(--muted); margin-top: 8px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .gps-status span { display: inline-flex; gap: 6px; align-items: center; }
+  .gps-status a { text-decoration: underline; font-weight: 700; color: var(--ink); }
+  .profile-head { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; }
+  .muted-row { color: var(--muted); font-size: 13.5px; display: flex; gap: 6px; align-items: center; margin-top: 2px; }
+  .orders { display: grid; gap: 8px; }
+  .order { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+  .order span { display: block; font-size: 12.5px; color: var(--muted); }
+  .btn.busy .lucide { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .live-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px rgba(19,138,71,.2); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(19,138,71,.05); } }
+  .tabbar .has-live::after { content: ""; position: absolute; top: 4px; right: calc(50% - 20px); width: 9px; height: 9px; border-radius: 50%; background: var(--ok); }
+  button.order { width: 100%; background: var(--surface); text-align: left; cursor: pointer; font: inherit; color: inherit; }
+  button.order:hover { border-color: var(--black); }
+  .order b { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .order strong { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 3px 8px; background: var(--surface-2); color: var(--ink-2); }
+  .pill .lucide { width: 12px; height: 12px; }
+  .pill.warn { background: #fff4e5; color: var(--warn); }
+  .pill.info { background: #eaf1ff; color: #1d4ed8; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.bad { background: #fdecea; color: var(--danger); }
+  .order-status { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 10px; }
+  .live { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--ok); }
+  .live .lucide { width: 14px; height: 14px; }
+  .tracker { margin: 8px 0 16px; }
+  .tstep { position: relative; display: grid; grid-template-columns: 38px 1fr; gap: 12px; padding-bottom: 14px; }
+  .tstep::before { content: ""; position: absolute; left: 18px; top: 38px; bottom: 0; width: 2px; background: var(--line); }
+  .tstep:last-child { padding-bottom: 0; }
+  .tstep:last-child::before { display: none; }
+  .tdot { width: 38px; height: 38px; border-radius: 50%; background: var(--surface-2); color: var(--muted); display: grid; place-items: center; position: relative; z-index: 1; }
+  .tdot .lucide { width: 18px; height: 18px; }
+  .tstep b { display: block; font-size: 14px; margin-top: 2px; color: var(--muted); }
+  .tstep span { font-size: 12.5px; color: var(--muted); }
+  .tstep.done .tdot { background: var(--black); color: var(--yellow); }
+  .tstep.done::before { background: var(--black); }
+  .tstep.done b, .tstep.current b { color: var(--ink); }
+  .tstep.current .tdot { background: var(--yellow); color: var(--black); box-shadow: 0 0 0 6px rgba(255,252,58,.35); }
+  .ok-banner, .cancel-box { display: flex; gap: 12px; align-items: center; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
+  .ok-banner { background: var(--yellow-soft); }
+  .cancel-box { background: #fdecea; color: var(--danger); }
+  .ok-banner .lucide, .cancel-box .lucide { width: 26px; height: 26px; }
+  .ok-banner b, .cancel-box b { display: block; }
+  .ok-banner span, .cancel-box span { font-size: 13px; color: var(--ink-2); }
+  .ck-items { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; display: grid; gap: 6px; font-size: 13.5px; }
+  .ck-items div { display: flex; justify-content: space-between; gap: 10px; }
+  .avatar { width: 56px; height: 56px; border-radius: 999px; background: var(--yellow); display: grid; place-items: center; font-size: 22px; font-weight: 800; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); background: var(--black); color: #fff; padding: 12px 18px; border-radius: 14px; z-index: 80; opacity: 0; transition: opacity .25s, transform .3s var(--ease); pointer-events: none; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-lg); }
+  .toast .lucide { color: var(--yellow); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- Footer ---------- */
+  footer { background: var(--black); color: #a3a39c; margin-top: 56px; font-size: 14px; }
+  footer .wrap { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 28px; padding-top: 40px; padding-bottom: 28px; }
+  footer h4 { color: #fff; margin: 0 0 12px; font-size: 14px; }
+  footer .brand { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+  footer .brand img { width: 52px; height: 52px; border-radius: 12px; }
+  footer .brand b { color: var(--yellow); font-size: 16px; }
+  footer ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  footer li a, footer li button { display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; padding: 0; color: #d4d4ce; font-size: 14px; }
+  footer li a:hover, footer li button:hover { color: var(--yellow); }
+  .socials { display: flex; gap: 8px; margin-top: 14px; }
+  .socials a { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: #1c1c1c; color: #fff; transition: background .2s, color .2s; }
+  .socials a:hover { background: var(--yellow); color: var(--black); }
+  .copy { border-top: 1px solid #1f1f1f; text-align: center; padding: 16px; font-size: 12.5px; color: #6f6f69; }
+
+  .wa-float { position: fixed; right: 18px; bottom: 18px; z-index: 30; background: var(--wa); color: #fff; border: 0; border-radius: 999px; height: 56px; padding: 0 20px 0 16px; display: flex; align-items: center; gap: 8px; font-weight: 700; box-shadow: 0 10px 30px -8px rgba(37,211,102,.7); transition: transform .2s; }
+  .wa-float:hover { transform: translateY(-2px); }
+  .wa-float .lucide { width: 24px; height: 24px; }
+
+  /* ---------- Mobile bottom nav ---------- */
+  .tabbar { display: none; }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-art { display: none; }
+    .features { grid-template-columns: repeat(2, 1fr); }
+    footer .wrap { grid-template-columns: 1fr 1fr; }
+    footer .wrap > :first-child { grid-column: 1 / -1; }
+  }
+  @media (max-width: 640px) {
+    .announce .wrap { justify-content: flex-start; }
+    .bar { flex-wrap: wrap; gap: 10px; }
+    .search { order: 3; flex-basis: 100%; }
+    .head-actions .lbl, .head-actions .account { display: none; }
+    .logo { flex: 1; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .scroller { grid-auto-columns: 190px; gap: 10px; }
+    .card { padding: 8px; }
+    .price { font-size: 17px; }
+    .add-btn { height: 40px; }
+    main { padding-top: 12px; }
+    .hero { padding: 22px 18px; border-radius: 20px; gap: 0; }
+    .eyebrow { font-size: 11.5px; padding: 5px 10px; }
+    .hero h1 { font-size: 28px; letter-spacing: -.8px; margin: 12px 0 8px; }
+    .hero h1 br { display: none; }
+    .hero p.lead { font-size: 14px; margin-bottom: 16px; }
+    .hero p.lead .more { display: none; }
+    .hero-actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .hero-actions .btn { padding: 11px 12px; font-size: 14px; }
+    .stats { display: none; }
+    .features { display: flex; overflow-x: auto; scrollbar-width: none; gap: 8px; margin-top: 10px; }
+    .features::-webkit-scrollbar { display: none; }
+    .feature { padding: 8px 12px 8px 8px; flex-shrink: 0; border-radius: 999px; gap: 8px; }
+    .feature .ic { width: 30px; height: 30px; border-radius: 999px; }
+    .feature .ic .lucide { width: 15px; height: 15px; }
+    .feature b { font-size: 12.5px; white-space: nowrap; }
+    .feature span { display: none; }
+    section.row { margin-top: 28px; }
+    .service { grid-template-columns: 1fr; }
+    .stats { gap: 18px; }
+    .perks-list { grid-template-columns: 1fr 1fr 1fr; }
+    .tabbar { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; background: rgba(255,255,255,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); }
+    .tabbar button { position: relative; border: 0; background: none; display: grid; justify-items: center; gap: 2px; font-size: 11px; font-weight: 600; color: var(--muted); padding: 6px 0; }
+    .tabbar button.on { color: var(--black); }
+    .tabbar button.on .lucide { background: var(--yellow); border-radius: 999px; padding: 3px 12px; width: 46px; }
+    .tabbar .lucide { width: 22px; height: 22px; box-sizing: content-box; padding: 3px 12px; }
+    .tabbar .badge { top: 0; right: calc(50% - 26px); }
+    .wa-float { bottom: 84px; height: 52px; width: 52px; padding: 0; justify-content: center; }
+    .wa-float span { display: none; }
+    .toast { bottom: 90px; }
+    footer { padding-bottom: 70px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="announce"><div class="wrap" id="announce"></div></div>
+
+<header>
+  <div class="wrap bar">
+    <div class="logo" data-action="home"><img src="logo.svg" alt=""><div><b>Romana CompuService</b><small>Tecnología · Servicio</small></div></div>
+    <form class="search" id="searchForm" role="search"><i data-lucide="search"></i><input id="searchInput" type="search" placeholder="Buscar laptop, cargador, SSD, RAM…" aria-label="Buscar productos"></form>
+    <div class="head-actions">
+      <button class="icon-btn account" data-action="account" id="accountBtn"></button>
+      <button class="icon-btn dark" data-action="cart" aria-label="Carrito"><i data-lucide="shopping-bag"></i><span class="lbl">Carrito</span><span class="badge" id="cartCount">0</span></button>
+    </div>
+  </div>
+  <nav class="wrap cats-nav" id="catsNav"></nav>
+</header>
+
+<main class="wrap" id="app"></main>
+<footer id="footer"></footer>
+<button class="wa-float" data-action="whatsapp" aria-label="Escríbenos por WhatsApp"><i data-lucide="message-circle"></i><span>WhatsApp</span></button>
+
+<nav class="tabbar" id="tabbar">
+  <button data-action="home" data-tab="home"><i data-lucide="house"></i>Inicio</button>
+  <button data-action="catalog" data-tab="catalog"><i data-lucide="layout-grid"></i>Catálogo</button>
+  <button data-action="cart" data-tab="cart"><i data-lucide="shopping-bag"></i>Carrito<span class="badge" id="cartCount2">0</span></button>
+  <button data-action="account" data-tab="account"><i data-lucide="user-round"></i>Cuenta</button>
+</nav>
+
+<div class="overlay" id="overlay" data-action="close"></div>
+
+<aside class="drawer" id="cartDrawer" aria-label="Carrito">
+  <div class="drawer-head"><h3><i data-lucide="shopping-bag"></i> Tu carrito</h3><button class="x" data-action="close" aria-label="Cerrar"><i data-lucide="x"></i></button></div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="drawer-foot" id="cartFoot"></div>
+</aside>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="cuentas.js"></script>
+<script>
+/* ======================================================
+   DATOS — el catálogo vive en Supabase y se edita en vivo
+   desde admin.html (productos, categorías y configuración).
+   ====================================================== */
+let CONFIG = {}, ICONS = {}, PRODUCTS = [], categories = [];
+async function loadCatalog() {
+  const [s, c, p] = await Promise.all([
+    sb.from("settings").select("data").eq("id", 1).maybeSingle(),
+    sb.from("categories").select("name, icon, orden").order("orden"),
+    sb.from("products").select("*").order("id"),
+  ]);
+  if (s.error || c.error || p.error) throw s.error || c.error || p.error;
+  CONFIG = s.data?.data || {};
+  ICONS = Object.fromEntries((c.data || []).map((x) => [x.name, x.icon]));
+  PRODUCTS = (p.data || []).filter((x) => !x.oculto)
+    .map((x) => ({ ...x, precio: Number(x.precio), descripcion: x.descripcion || "", img: x.img || "" }));
+  categories = [...new Set([...Object.keys(ICONS), ...PRODUCTS.map((x) => x.cat)])].filter((k) => PRODUCTS.some((x) => x.cat === k));
+  // El carrito se ajusta a la existencia real
+  if (typeof state !== "undefined") {
+    state.cart = state.cart.map((l) => { const q = byId(l.id); return q ? { ...l, qty: Math.min(l.qty, q.stock) } : null; }).filter((l) => l && l.qty > 0);
+  }
+}
+
+/* ======================================================
+   Utilidades
+   ====================================================== */
+const $ = (s) => document.querySelector(s);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("tc_" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("tc_" + k, JSON.stringify(v)); } catch {} },
+};
+const money = (n) => CONFIG.moneda + n.toLocaleString("en-US");
+const byId = (id) => PRODUCTS.find((p) => p.id === id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ic = (name) => `<i data-lucide="${name}"></i>`;
+const refreshIcons = () => { if (window.lucide) lucide.createIcons(); };
+const titleCase = (s) => s.toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase());
+/* Precio con descuento redondeado a múltiplos de 5 */
+const finalPrice = (p) => p.oferta ? Math.round((p.precio * (1 - CONFIG.descuento / 100)) / 5) * 5 : p.precio;
+const icon = (p) => p.img ? `<img src="${esc(p.img)}" alt="">` : ic(ICONS[p.cat] || "package");
+const waLink = (text) => `https://wa.me/${CONFIG.whatsapp}${text ? "?text=" + encodeURIComponent(text) : ""}`;
+const igLink = () => `https://www.instagram.com/${CONFIG.instagram}/`;
+
+/* ---------- Estado ---------- */
+const state = {
+  view: "home",            // home | catalog
+  cat: null,
+  q: "",
+  list: null,              // lista especial: best | offers | again | inspired | new
+  sort: "",
+  qty: {},                 // cantidad elegida en cada tarjeta
+  cart: store.get("cart", []),          // [{id, qty}]
+  user: null,                           // perfil del cliente (Supabase)
+  orders: [],                           // pedidos del cliente
+  viewed: store.get("viewed", []),      // ids vistos recientemente
+  bought: [],                           // ids comprados antes (de sus pedidos)
+};
+const save = () => { store.set("cart", state.cart); store.set("viewed", state.viewed); };
+
+/* ---------- Listas inteligentes ---------- */
+const available = (p) => p.stock > 0;
+const lists = {
+  best:     { t: "Más vendidos", i: "flame", s: "Lo que más piden nuestros clientes", f: () => [...PRODUCTS].sort((a, b) => b.vendidos - a.vendidos) },
+  offers:   { t: "Ofertas del día", i: "zap", s: () => `${CONFIG.descuento}% OFF en estos productos`, f: () => PRODUCTS.filter((p) => p.oferta) },
+  again:    { t: "Vuelve a comprar", i: "rotate-ccw", s: "Productos que ya compraste antes", f: () => state.bought.map(byId).filter(Boolean),
+              empty: "Aquí aparecerán los productos que compres." },
+  inspired: { t: "Inspirado en lo que viste", i: "sparkles", s: "Selección personalizada para ti", f: inspired,
+              empty: "Mira algunos productos y te recomendaremos similares." },
+  new:      { t: "Recién llegados", i: "package-open", s: "Lo último en inventario", f: () => [...PRODUCTS].sort((a, b) => b.nuevo.localeCompare(a.nuevo)) },
+};
+function inspired() {
+  const seen = state.viewed.map(byId).filter(Boolean);
+  if (!seen.length) return [];
+  const cats = new Set(seen.map((p) => p.cat));
+  const words = new Set(seen.flatMap((p) => p.nombre.toLowerCase().split(/\W+/).filter((w) => w.length > 3)));
+  const score = (p) => (cats.has(p.cat) ? 2 : 0) + p.nombre.toLowerCase().split(/\W+/).filter((w) => words.has(w)).length;
+  return PRODUCTS.filter((p) => score(p) > 0).sort((a, b) => score(b) - score(a));
+}
+
+/* ======================================================
+   Render
+   ====================================================== */
+function card(p) {
+  const fp = finalPrice(p);
+  const low = p.stock > 0 && p.stock <= 5;
+  return `<article class="card ${available(p) ? "" : "is-out"}">
+    <div class="thumb" data-action="detail" data-id="${p.id}">
+      ${icon(p)}
+      <div class="tags">
+        ${p.oferta && available(p) ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}
+        ${low ? `<span class="tag last">${ic("zap")}Últimas</span>` : ""}
+        ${!available(p) ? '<span class="tag out">Agotado</span>' : ""}
+      </div>
+    </div>
+    <div class="body">
+      <div class="cat">${esc(titleCase(p.cat))}</div>
+      <div class="name" data-action="detail" data-id="${p.id}">${esc(p.nombre)}</div>
+      <div class="prices"><span class="price">${money(fp)}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}</div>
+      ${available(p)
+        ? `<span class="stock ${low ? "low" : ""}">${ic(low ? "alert-circle" : "circle-check")}${low ? `Solo quedan ${p.stock}` : "En stock"}</span>
+      <div class="buy-row"><button class="btn btn-dark btn-block add-btn" data-action="add" data-id="${p.id}">${ic("shopping-bag")}Agregar</button></div>`
+        : `<div class="buy-row"><button class="btn btn-outline btn-block add-btn" data-action="notify" data-id="${p.id}">${ic("bell")}Avísame</button></div>`}
+    </div>
+  </article>`;
+}
+
+function row(key, items, opts = {}) {
+  const L = lists[key] || opts;
+  const sub = typeof L.s === "function" ? L.s() : L.s;
+  const body = items.length
+    ? `<div class="scroller">${items.slice(0, 12).map(card).join("")}</div>`
+    : `<div class="empty">${ic(L.i)}${L.empty || "Sin productos por ahora."}</div>`;
+  return `<section class="row">
+    <div class="row-head"><div class="title"><span class="ic">${ic(L.i)}</span><div><h2>${esc(L.t)}</h2><p>${esc(sub)}</p></div></div>
+    ${items.length ? `<button class="link" data-action="${opts.cat ? "cat" : "list"}" data-val="${esc(opts.cat || key)}">Ver todo${ic("arrow-right")}</button>` : ""}</div>
+    ${body}</section>`;
+}
+
+function renderHome() {
+  let html = `<div class="hero">
+      <div>
+        <span class="eyebrow">${ic("sparkles")}${esc(CONFIG.saludo)} ${esc(CONFIG.marca)}</span>
+        <h1>Tu tecnología,<br>en <em>las mejores manos.</em></h1>
+        <p class="lead">${esc(CONFIG.frase)} en La Romana.<span class="more"> Laptops, repuestos y accesorios con garantía y entrega a domicilio.</span></p>
+        <div class="hero-actions">
+          <button class="btn btn-yellow btn-lg" data-action="catalog">${ic("layout-grid")}Ver catálogo</button>
+          <button class="btn btn-glass btn-lg" data-action="scroll-cats">${ic("list")}Categorías</button>
+        </div>
+        <div class="stats">
+          <div><b>${PRODUCTS.length}+</b><span>Productos</span></div>
+          <div><b>${CONFIG.descuento}%</b><span>Off en ofertas</span></div>
+          <div><b>24h</b><span>Entrega rápida</span></div>
+        </div>
+      </div>
+      <div class="hero-art">
+        <img src="logo.svg" alt="${esc(CONFIG.nombre)}">
+        <div class="float-card b"><span class="ic">${ic("shield-check")}</span><div>Garantía<small>en todos los productos</small></div></div>
+        <div class="float-card a"><span class="ic">${ic("truck")}</span><div>Delivery<small>La Romana y alrededores</small></div></div>
+      </div>
+    </div>
+    <div class="features">
+      <div class="feature"><span class="ic">${ic("badge-percent")}</span><div><b>Ofertas hasta ${CONFIG.descuento}%</b><span>Descuentos cada día</span></div></div>
+      <div class="feature"><span class="ic">${ic("truck")}</span><div><b>Delivery disponible</b><span>Te lo llevamos a casa</span></div></div>
+      <div class="feature"><span class="ic">${ic("shield-check")}</span><div><b>Garantía en todos</b><span>Compra con confianza</span></div></div>
+      <div class="feature"><span class="ic">${ic("wrench")}</span><div><b>Servicio técnico</b><span>Reparación y mantenimiento</span></div></div>
+    </div>`;
+  html += row("best", lists.best.f().filter(available));
+  html += `<section class="row" id="catSections">
+      <div class="row-head"><div class="title"><span class="ic">${ic("layout-grid")}</span><div><h2>Categorías</h2><p>Encuentra lo que necesitas</p></div></div></div>
+      <div class="cat-grid">${categories.map((c) => `<button class="cat-tile" data-action="cat" data-val="${esc(c)}"><span class="ic">${ic(ICONS[c] || "package")}</span><div><b>${esc(titleCase(c))}</b><br><span>${PRODUCTS.filter((p) => p.cat === c).length} productos</span></div></button>`).join("")}</div>
+    </section>`;
+  html += row("offers", lists.offers.f().filter(available));
+  const again = lists.again.f(), insp = lists.inspired.f().filter(available);
+  if (state.user && again.length) html += row("again", again);
+  if (insp.length) html += row("inspired", insp);
+  html += row("new", lists.new.f().filter(available));
+  html += `<div class="service">
+      <span class="ic">${ic("wrench")}</span>
+      <div><h3>¿Tu computadora está fallando?</h3><p>Diagnóstico, reparación, limpieza y mejoras. Escríbenos y te ayudamos hoy mismo.</p>
+        <ul><li>${ic("check")}Cambio de pantalla</li><li>${ic("check")}Mejora a SSD y RAM</li><li>${ic("check")}Formateo y programas</li><li>${ic("check")}Limpieza interna</li></ul></div>
+      <a class="btn btn-dark btn-lg" href="${waLink("Hola, necesito servicio técnico para mi computadora.")}" target="_blank" rel="noopener">${ic("message-circle")}Cotizar por WhatsApp</a>
+    </div>`;
+  html += `<div style="text-align:center;margin-top:32px"><button class="btn btn-dark btn-lg" data-action="catalog">Ver el catálogo completo${ic("arrow-right")}</button></div>`;
+  return html;
+}
+
+function renderCatalog() {
+  let items = state.list ? lists[state.list].f() : [...PRODUCTS];
+  if (state.cat) items = items.filter((p) => p.cat === state.cat);
+  if (state.q) {
+    const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const terms = norm(state.q).split(/\s+/).filter(Boolean);
+    items = items.filter((p) => terms.every((t) => norm(p.nombre + " " + p.cat).includes(t)));
+  }
+  if (state.sort === "lo") items.sort((a, b) => finalPrice(a) - finalPrice(b));
+  if (state.sort === "hi") items.sort((a, b) => finalPrice(b) - finalPrice(a));
+  if (state.sort === "az") items.sort((a, b) => a.nombre.localeCompare(b.nombre));
+  const L = state.list && lists[state.list];
+  const title = L ? L.t : state.cat ? titleCase(state.cat) : state.q ? `Resultados para “${state.q}”` : "Todos los productos";
+  const i = L ? L.i : state.cat ? ICONS[state.cat] || "package" : state.q ? "search" : "layout-grid";
+  return `<div class="row-head"><div class="title"><span class="ic">${ic(i)}</span><div><h2>${esc(title)}</h2><p>${items.length} producto(s)</p></div></div>
+      <select id="sort" class="chip" aria-label="Ordenar">
+        <option value="">Ordenar por</option>
+        <option value="lo" ${state.sort === "lo" ? "selected" : ""}>Menor precio</option>
+        <option value="hi" ${state.sort === "hi" ? "selected" : ""}>Mayor precio</option>
+        <option value="az" ${state.sort === "az" ? "selected" : ""}>A–Z</option>
+      </select></div>
+    ${items.length ? `<div class="grid">${items.map(card).join("")}</div>`
+      : `<div class="empty">${ic("search-x")}No encontramos productos.<a class="btn btn-wa" href="${waLink(`Hola, busco: ${state.q || ""}`)}" target="_blank" rel="noopener">${ic("message-circle")}Pídelo por WhatsApp</a></div>`}`;
+}
+
+function renderFooter() {
+  return `<div class="wrap">
+      <div>
+        <div class="brand"><img src="logo.svg" alt=""><div><b>${esc(CONFIG.marca)}</b><br><span>${esc(CONFIG.frase)}</span></div></div>
+        <p style="margin:0;max-width:340px">Tecnología con garantía, buenos precios y atención personalizada.</p>
+        <div class="socials">
+          <a href="${igLink()}" target="_blank" rel="noopener" aria-label="Instagram">${ic("instagram")}</a>
+          <a href="${waLink()}" target="_blank" rel="noopener" aria-label="WhatsApp">${ic("message-circle")}</a>
+          <a href="tel:+${CONFIG.whatsapp}" aria-label="Llamar">${ic("phone")}</a>
+        </div>
+      </div>
+      <div><h4>Contacto</h4><ul>
+        <li><a href="${waLink()}" target="_blank" rel="noopener">${ic("message-circle")}${esc(CONFIG.telefono)}</a></li>
+        <li><a href="${igLink()}" target="_blank" rel="noopener">${ic("instagram")}@${esc(CONFIG.instagram)}</a></li>
+        <li><span style="display:inline-flex;gap:8px;align-items:center">${ic("map-pin")}${esc(CONFIG.direccion)}</span></li>
+      </ul></div>
+      <div><h4>Tienda</h4><ul>
+        <li><button data-action="catalog">${ic("layout-grid")}Catálogo</button></li>
+        <li><button data-action="list" data-val="offers">${ic("zap")}Ofertas del día</button></li>
+        <li><button data-action="list" data-val="new">${ic("package-open")}Recién llegados</button></li>
+        <li><button data-action="account">${ic("user-round")}Mi cuenta</button></li>
+        <li><a href="privacidad.html">${ic("shield-check")}Aviso de privacidad</a></li>
+      </ul></div>
+    </div>
+    <div class="copy">© ${new Date().getFullYear()} ${esc(CONFIG.marca)}. Todos los derechos reservados.</div>`;
+}
+
+function render() {
+  document.title = CONFIG.marca + " - Tienda";
+  $("#announce").innerHTML = `<span>${ic("truck")}Delivery en La Romana</span><span>${ic("shield-check")}Garantía en todos los productos</span><span>${ic("badge-percent")}Ofertas hasta ${CONFIG.descuento}% OFF</span><span>${ic("message-circle")}${esc(CONFIG.telefono)}</span>`;
+  $("#catsNav").innerHTML = `<button class="chip ${state.view === "catalog" && !state.cat && !state.list && !state.q ? "active" : ""}" data-action="catalog">${ic("layout-grid")}Todos</button>` +
+    categories.map((c) => `<button class="chip ${state.cat === c ? "active" : ""}" data-action="cat" data-val="${esc(c)}">${ic(ICONS[c] || "package")}${esc(titleCase(c))}</button>`).join("");
+  $("#app").innerHTML = state.view === "home" ? renderHome() : renderCatalog();
+  const active = (state.orders || []).some(pedidoActivo);
+  $("#accountBtn").innerHTML = `${ic("user-round")}<span>${state.user ? esc(state.user.nombre.split(" ")[0]) : "Entrar"}</span>${active ? `<span class="live-dot" title="Tienes pedidos en curso"></span>` : ""}`;
+  $("#tabbar [data-tab=account]").classList.toggle("has-live", active);
+  const count = state.cart.reduce((s, l) => s + l.qty, 0);
+  ["#cartCount", "#cartCount2"].forEach((s) => { $(s).textContent = count; $(s).style.display = count ? "" : "none"; });
+  document.querySelectorAll("#tabbar [data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === state.view));
+  $("#footer").innerHTML = renderFooter();
+  renderCart();
+  refreshIcons();
+}
+
+function renderCart() {
+  const lines = state.cart.map((l) => ({ ...l, p: byId(l.id) })).filter((l) => l.p);
+  $("#cartBody").innerHTML = lines.length ? lines.map((l) => `
+    <div class="line"><div class="mini">${icon(l.p)}</div>
+      <div><div class="t">${esc(l.p.nombre)}</div>
+        <div class="controls"><span class="stepper"><button data-action="cart-" data-id="${l.id}" aria-label="Menos">${ic("minus")}</button><span>${l.qty}</span><button data-action="cart+" data-id="${l.id}" aria-label="Más">${ic("plus")}</button></span>
+        <button class="trash" data-action="remove" data-id="${l.id}" aria-label="Quitar">${ic("trash-2")}</button></div></div>
+      <strong>${money(finalPrice(l.p) * l.qty)}</strong></div>`).join("")
+    : `<div class="empty">${ic("shopping-bag")}Tu carrito está vacío.<button class="btn btn-dark" data-action="catalog">Explorar productos</button></div>`;
+  const sub = lines.reduce((s, l) => s + finalPrice(l.p) * l.qty, 0);
+  const saved = lines.reduce((s, l) => s + (l.p.precio - finalPrice(l.p)) * l.qty, 0);
+  $("#cartFoot").innerHTML = lines.length ? `
+    ${saved ? `<div class="sum save"><span style="display:inline-flex;gap:6px;align-items:center">${ic("piggy-bank")}Ahorras</span><span>${money(saved)}</span></div>` : ""}
+    <div class="sum total"><span>Subtotal</span><span>${money(sub)}</span></div>
+    <button class="btn btn-yellow btn-lg btn-block" data-action="checkout">Finalizar pedido${ic("arrow-right")}</button>` : "";
+  $("#cartFoot").style.display = lines.length ? "" : "none";
+}
+
+/* ======================================================
+   Acciones
+   ====================================================== */
+function toast(msg, i = "circle-check") { const t = $("#toast"); t.innerHTML = `${ic(i)}${esc(msg)}`; refreshIcons(); t.classList.add("show"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 2200); }
+function openPanel(el) { closeAll(); $("#overlay").classList.add("open"); el.classList.add("open"); }
+function closeAll() { ["#overlay", "#cartDrawer", "#modal"].forEach((s) => $(s).classList.remove("open")); }
+function modal(html) { $("#modal").innerHTML = html; refreshIcons(); openPanel($("#modal")); }
+const modalHead = (title, sub) => `<div class="modal-head"><div><h3>${title}</h3>${sub ? `<p>${sub}</p>` : ""}</div><button class="x" data-action="close" aria-label="Cerrar">${ic("x")}</button></div>`;
+function wa(text) { window.open(waLink(text), "_blank", "noopener"); }
+function bumpBadge() { ["#cartCount", "#cartCount2"].forEach((s) => { const b = $(s); b.classList.remove("bump"); void b.offsetWidth; b.classList.add("bump"); }); }
+
+function addToCart(id, qty) {
+  const p = byId(id);
+  const line = state.cart.find((l) => l.id === id);
+  const current = line ? line.qty : 0;
+  const n = Math.min(qty, p.stock - current);
+  if (n <= 0) { toast(`Máximo disponible: ${p.stock}`, "alert-circle"); return false; }
+  line ? (line.qty += n) : state.cart.push({ id, qty: n });
+  save(); render(); bumpBadge(); toast("Agregado al carrito");
+  return true;
+}
+function markViewed(id) {
+  state.viewed = [id, ...state.viewed.filter((x) => x !== id)].slice(0, 12);
+  save();
+}
+
+function showDetail(id) {
+  const p = byId(id); markViewed(id);
+  const q = state.qty[id] || 1;
+  const similar = PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4);
+  modal(`${modalHead(esc(p.nombre), esc(titleCase(p.cat)))}
+    <div class="thumb detail-thumb">${icon(p)}<div class="tags">${p.oferta ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}</div></div>
+    <div class="prices"><span class="price" style="font-size:28px">${money(finalPrice(p))}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}</div>
+    <span class="stock ${p.stock <= 5 ? "low" : ""}" style="margin-top:6px">${ic(p.stock > 0 ? "package-check" : "package-x")}${p.stock > 0 ? `Disponibles: ${p.stock}` : "Agotado por ahora"}</span>
+    ${p.descripcion ? `<p style="color:var(--ink-2);font-size:14px;line-height:1.55;white-space:pre-line">${esc(p.descripcion)}</p>` : ""}
+    <div class="perks-list"><div>${ic("shield-check")}Garantía</div><div>${ic("truck")}Delivery</div><div>${ic("badge-dollar-sign")}Igualamos precio</div></div>
+    ${available(p) ? `<div class="detail-buy">
+        <span class="stepper"><button data-action="qty-" data-id="${p.id}" aria-label="Menos" ${q <= 1 ? "disabled" : ""}>${ic("minus")}</button><span>${q}</span><button data-action="qty+" data-id="${p.id}" aria-label="Más" ${q >= p.stock ? "disabled" : ""}>${ic("plus")}</button></span>
+        <button class="btn btn-dark" data-action="add" data-id="${p.id}">${ic("shopping-bag")}Agregar</button>
+      </div>
+      <button class="btn btn-yellow btn-lg btn-block" style="margin-top:8px" data-action="buy" data-id="${p.id}">${ic("zap")}Comprar ahora</button>`
+      : `<button class="btn btn-outline btn-block" data-action="notify" data-id="${p.id}">${ic("bell")}Avísame cuando llegue</button>`}
+    <button class="match btn-block" style="margin-top:6px" data-action="match" data-id="${p.id}">${ic("badge-dollar-sign")}¿Lo viste más barato? Igualamos precio</button>
+    ${similar.length ? `<div class="similar"><h4>También te puede interesar</h4>${similar.map((s) => `<div class="line" data-action="detail" data-id="${s.id}"><div class="mini">${icon(s)}</div><div class="t">${esc(s.nombre)}</div><strong>${money(finalPrice(s))}</strong></div>`).join("")}</div>` : ""}`);
+}
+
+/* ======================================================
+   Cuentas de clientes (Supabase): registro con cédula,
+   inicio de sesión, ubicación para delivery e historial.
+   ====================================================== */
+async function loadUser() {
+  if (!sb) return;
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { Object.assign(state, { user: null, orders: [], bought: [] }); subscribeOrders(); render(); return; }
+  const { data: prof } = await sb.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+  state.user = prof || null;
+  const { data: ords } = prof ? await sb.from("orders").select("*").order("created_at", { ascending: false }).limit(30) : { data: [] };
+  state.orders = ords || [];
+  state.bought = [...new Set(state.orders.flatMap((o) => (o.items || []).map((i) => i.id)))];
+  subscribeOrders();
+  render();
+}
+if (sb) sb.auth.onAuthStateChange((event) => { if (event === "SIGNED_OUT") setTimeout(loadUser, 0); });
+
+const fmtDate = (d) => new Date(d).toLocaleDateString("es-DO", { day: "numeric", month: "short", year: "numeric" });
+const mapsLink = (lat, lng) => `https://maps.google.com/?q=${lat},${lng}`;
+const addressText = (u) => [u.direccion, u.sector].filter(Boolean).join(", ") + (u.referencia ? ` (Ref: ${u.referencia})` : "");
+
+const cedulaField = (value = "") => `<label class="field">Cédula<span class="input">${ic("id-card")}<input name="cedula" required inputmode="numeric" autocomplete="username" placeholder="000-0000000-0" maxlength="13" data-cedula value="${esc(Cedula.formato(value))}"></span><span class="hint" data-cedula-hint></span></label>`;
+const locationFields = (u = {}) => `
+  <div class="loc-box">
+    <div class="loc-title">${ic("map-pin")}Ubicación para delivery</div>
+    <label class="field">Dirección<span class="input">${ic("house")}<input name="direccion" required maxlength="300" autocomplete="street-address" placeholder="Calle, número, edificio/apto" value="${esc(u.direccion || "")}"></span></label>
+    <label class="field">Sector<span class="input">${ic("map")}<input name="sector" required maxlength="120" placeholder="Ej: Villa Verde, La Romana" value="${esc(u.sector || "")}"></span></label>
+    <label class="field">Referencia (opcional)<span class="input">${ic("flag")}<input name="referencia" maxlength="300" placeholder="Ej: frente al colmado, casa verde" value="${esc(u.referencia || "")}"></span></label>
+    <input type="hidden" name="lat" value="${u.lat ?? ""}"><input type="hidden" name="lng" value="${u.lng ?? ""}">
+    <button type="button" class="btn btn-outline btn-block" data-action="gps">${ic("locate-fixed")}Usar mi ubicación actual</button>
+    <div class="gps-status" data-gps-status>${u.lat != null ? gpsSaved(u.lat, u.lng) : `<span>${ic("info")}Opcional: ayuda al mensajero a encontrarte.</span>`}</div>
+  </div>`;
+const gpsSaved = (lat, lng) => `<span class="ok">${ic("circle-check")}Ubicación GPS guardada</span> <a href="${mapsLink(lat, lng)}" target="_blank" rel="noopener">Ver en el mapa</a>`;
+const formError = () => `<div class="form-err" data-form-err hidden></div>`;
+function showFormError(form, msg) { const b = form.querySelector("[data-form-err]"); b.innerHTML = `${ic("alert-circle")}${esc(msg)}`; b.hidden = false; refreshIcons(); }
+function setBusy(form, busy, label) {
+  const b = form.querySelector("button[type=submit], button:not([type])");
+  if (!b) return;
+  if (busy) { b.dataset.label = b.innerHTML; b.disabled = true; b.innerHTML = `${ic("loader-circle")}${label}`; b.classList.add("busy"); refreshIcons(); }
+  else { b.disabled = false; b.innerHTML = b.dataset.label; b.classList.remove("busy"); refreshIcons(); }
+}
+
+function showAccount(next, mode = "login") {
+  if (!sb) return modal(`${modalHead("Cuentas no disponibles")}<div class="note">${ic("wifi-off")}No pudimos conectar con el servidor. Revisa tu internet y vuelve a intentarlo.</div>`);
+  if (state.user) return showProfile();
+  const tabs = `<div class="auth-tabs"><button type="button" class="${mode === "login" ? "on" : ""}" data-action="auth-mode" data-val="login" data-next="${next || ""}">Iniciar sesión</button><button type="button" class="${mode === "signup" ? "on" : ""}" data-action="auth-mode" data-val="signup" data-next="${next || ""}">Crear cuenta</button></div>`;
+  const remember = `<label class="check-row"><input type="checkbox" name="recordar" ${Recordar.get() ? "checked" : ""}>Recordarme en este dispositivo</label>`;
+  if (mode === "login") {
+    modal(`${modalHead("Bienvenido", next === "checkout" ? "Inicia sesión para completar tu pedido." : "Entra con tu cédula y contraseña.")}${tabs}
+      <form id="loginForm" data-next="${next || ""}" novalidate>
+        ${cedulaField(Recordar.ultimaCedula())}
+        <label class="field">Contraseña<span class="input">${ic("lock")}<input name="password" type="password" required autocomplete="current-password" placeholder="Tu contraseña"></span></label>
+        ${remember}${formError()}
+        <button class="btn btn-dark btn-lg btn-block">Entrar${ic("arrow-right")}</button>
+        <button type="button" class="match btn-block" style="margin-top:8px" data-action="forgot">${ic("key-round")}¿Olvidaste tu contraseña?</button>
+      </form>`);
+  } else {
+    modal(`${modalHead("Crear cuenta", "Regístrate con tu cédula. Guardamos tu ubicación para el delivery.")}${tabs}
+      <form id="signupForm" data-next="${next || ""}" novalidate>
+        ${cedulaField()}
+        <label class="field">Nombre completo<span class="input">${ic("user-round")}<input name="nombre" required maxlength="120" autocomplete="name" placeholder="Tu nombre y apellido"></span></label>
+        <label class="field">Teléfono / WhatsApp<span class="input">${ic("phone")}<input name="telefono" required type="tel" inputmode="tel" autocomplete="tel" placeholder="(809) 000-0000"></span></label>
+        <label class="field">Contraseña<span class="input">${ic("lock")}<input name="password" type="password" required minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></span></label>
+        ${locationFields()}
+        ${remember}
+        <label class="check-row"><input type="checkbox" name="acepto">Acepto el&nbsp;<a href="privacidad.html" target="_blank" rel="noopener" style="text-decoration:underline">aviso de privacidad</a></label>
+        ${formError()}
+        <button class="btn btn-yellow btn-lg btn-block">Crear mi cuenta${ic("arrow-right")}</button>
+        <div class="note">${ic("shield-check")}Validamos que la cédula sea correcta. Tus datos solo los ve ${esc(CONFIG.marca)}.</div>
+      </form>`);
+  }
+  const c = $("#modal [data-cedula]"); if (c) updateCedulaHint(c);
+}
+
+function updateCedulaHint(input) {
+  const hint = input.closest(".field").querySelector("[data-cedula-hint]");
+  const digits = Cedula.limpiar(input.value);
+  if (digits.length < 11) { hint.className = "hint"; hint.innerHTML = digits.length ? `${11 - digits.length} dígito(s) más` : ""; }
+  else if (Cedula.valida(digits)) { hint.className = "hint ok"; hint.innerHTML = `${ic("circle-check")}Cédula válida`; }
+  else { hint.className = "hint bad"; hint.innerHTML = `${ic("circle-x")}Esta cédula no es válida`; }
+  refreshIcons();
+}
+
+function showProfile() {
+  const u = state.user;
+  const orders = state.orders || [];
+  modal(`${modalHead("Mi cuenta")}
+    <div class="profile-head"><div class="avatar">${esc(u.nombre[0].toUpperCase())}</div>
+      <div><b>${esc(u.nombre)}</b><div class="muted-row">${ic("id-card")}${esc(Cedula.oculta(u.cedula))}</div><div class="muted-row">${ic("phone")}${esc(u.telefono)}</div></div></div>
+    <div class="loc-card">
+      <div class="loc-title">${ic("map-pin")}Mi dirección de entrega</div>
+      <p>${esc(addressText(u)) || "Sin dirección guardada"}</p>
+      ${u.lat != null ? `<a href="${mapsLink(u.lat, u.lng)}" target="_blank" rel="noopener" class="map-link">${ic("map")}Ver ubicación en el mapa</a>` : ""}
+      <button class="btn btn-outline btn-block" data-action="edit-profile">${ic("pencil")}Editar mis datos y ubicación</button>
+    </div>
+    <h4 style="margin:18px 0 8px;display:flex;gap:8px;align-items:center">${ic("receipt")}Mis pedidos</h4>
+    ${orders.length ? `<div class="orders">${orders.map((o) => `<button class="order" data-action="order" data-id="${o.id}"><div><b>Pedido #${o.id} ${statusPill(o)}</b><span>${fmtDate(o.created_at)} · ${(o.items || []).reduce((s, i) => s + i.qty, 0)} artículo(s) · ${o.entrega === "delivery" ? "Delivery" : "Retiro"}</span></div><strong>${money(Number(o.total))}${ic("chevron-right")}</strong></button>`).join("")}</div>`
+      : `<div class="note">${ic("package")}Aún no tienes pedidos.</div>`}
+    <button class="btn btn-outline btn-block" style="margin-top:14px" data-action="logout">${ic("log-out")}Cerrar sesión</button>`);
+}
+
+function showEditProfile() {
+  const u = state.user;
+  modal(`${modalHead("Editar mis datos", `Cédula ${esc(Cedula.oculta(u.cedula))}`)}
+    <form id="profileForm" novalidate>
+      <label class="field">Nombre completo<span class="input">${ic("user-round")}<input name="nombre" required maxlength="120" value="${esc(u.nombre)}"></span></label>
+      <label class="field">Teléfono / WhatsApp<span class="input">${ic("phone")}<input name="telefono" required type="tel" value="${esc(u.telefono)}"></span></label>
+      ${locationFields(u)}
+      ${formError()}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button type="button" class="btn btn-outline" data-action="account">Cancelar</button>
+        <button class="btn btn-dark">${ic("check")}Guardar</button>
+      </div>
+    </form>`);
+}
+
+function readLocation(form) {
+  const f = Object.fromEntries(new FormData(form));
+  const lat = f.lat === "" ? null : Number(f.lat), lng = f.lng === "" ? null : Number(f.lng);
+  return { direccion: (f.direccion || "").trim(), sector: (f.sector || "").trim(), referencia: (f.referencia || "").trim() || null,
+    lat: Number.isFinite(lat) ? lat : null, lng: Number.isFinite(lng) ? lng : null };
+}
+
+function useGps(btn) {
+  const form = btn.closest("form"), status = form.querySelector("[data-gps-status]");
+  if (!navigator.geolocation) { status.innerHTML = `<span class="bad">${ic("circle-x")}Tu dispositivo no permite compartir la ubicación.</span>`; return refreshIcons(); }
+  status.innerHTML = `<span>${ic("loader-circle")}Buscando tu ubicación…</span>`; refreshIcons();
+  navigator.geolocation.getCurrentPosition((pos) => {
+    form.lat.value = pos.coords.latitude.toFixed(6); form.lng.value = pos.coords.longitude.toFixed(6);
+    status.innerHTML = gpsSaved(form.lat.value, form.lng.value); refreshIcons();
+  }, () => {
+    status.innerHTML = `<span class="bad">${ic("circle-x")}No pudimos obtener tu ubicación. Permite el acceso o escribe la dirección.</span>`; refreshIcons();
+  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
+}
+
+async function doLogin(form) {
+  const f = Object.fromEntries(new FormData(form));
+  const cedula = Cedula.limpiar(f.cedula);
+  if (!Cedula.valida(cedula)) return showFormError(form, "Revisa tu cédula: no es válida.");
+  if (!f.password) return showFormError(form, "Escribe tu contraseña.");
+  Recordar.set(!!f.recordar);
+  setBusy(form, true, "Entrando…");
+  const { error } = await sb.auth.signInWithPassword({ email: Cedula.correo(cedula), password: f.password });
+  if (error) { setBusy(form, false); return showFormError(form, /invalid/i.test(error.message) ? "Cédula o contraseña incorrecta." : "No pudimos iniciar sesión. Inténtalo de nuevo."); }
+  Recordar.guardarCedula(f.recordar ? cedula : "");
+  await loadUser();
+  afterAuth(form.dataset.next, `¡Bienvenido, ${state.user ? state.user.nombre.split(" ")[0] : ""}!`);
+}
+
+async function doSignup(form) {
+  const f = Object.fromEntries(new FormData(form));
+  const cedula = Cedula.limpiar(f.cedula), telefono = String(f.telefono || "").replace(/\D/g, "");
+  const loc = readLocation(form);
+  if (!Cedula.valida(cedula)) return showFormError(form, "La cédula no es válida. Revísala.");
+  if ((f.nombre || "").trim().length < 3) return showFormError(form, "Escribe tu nombre completo.");
+  if (telefono.length < 10) return showFormError(form, "Escribe un teléfono de 10 dígitos.");
+  if ((f.password || "").length < 6) return showFormError(form, "La contraseña debe tener al menos 6 caracteres.");
+  if (!loc.direccion || !loc.sector) return showFormError(form, "Escribe tu dirección y sector para el delivery.");
+  if (!f.acepto) return showFormError(form, "Debes aceptar el aviso de privacidad para crear tu cuenta.");
+  Recordar.set(!!f.recordar);
+  setBusy(form, true, "Creando tu cuenta…");
+  try {
+    await registrarCliente({ cedula, nombre: f.nombre.trim(), telefono, password: f.password, ...loc });
+  } catch (err) { setBusy(form, false); return showFormError(form, err.message); }
+  const { error } = await sb.auth.signInWithPassword({ email: Cedula.correo(cedula), password: f.password });
+  if (error) { setBusy(form, false); return showFormError(form, "Tu cuenta se creó, pero no pudimos entrar. Inicia sesión."); }
+  Recordar.guardarCedula(f.recordar ? cedula : "");
+  await loadUser();
+  afterAuth(form.dataset.next, "¡Cuenta creada! Bienvenido.");
+}
+
+function afterAuth(next, msg) {
+  closeAll(); toast(msg, "hand");
+  if (next === "checkout") showCheckout();
+}
+
+async function saveProfile(form) {
+  const f = Object.fromEntries(new FormData(form));
+  const telefono = String(f.telefono || "").replace(/\D/g, "");
+  const loc = readLocation(form);
+  if ((f.nombre || "").trim().length < 3) return showFormError(form, "Escribe tu nombre completo.");
+  if (telefono.length < 10) return showFormError(form, "Escribe un teléfono de 10 dígitos.");
+  if (!loc.direccion || !loc.sector) return showFormError(form, "Escribe tu dirección y sector.");
+  setBusy(form, true, "Guardando…");
+  const patch = { nombre: f.nombre.trim(), telefono, ...loc };
+  const { error } = await sb.from("profiles").update(patch).eq("id", state.user.id);
+  if (error) { setBusy(form, false); return showFormError(form, "No pudimos guardar. Inténtalo de nuevo."); }
+  Object.assign(state.user, patch);
+  render(); showProfile(); toast("Datos actualizados");
+}
+
+/* ======================================================
+   Pedido: se envía a la tienda (panel) y el cliente
+   sigue el estado aquí mismo, en tiempo real.
+   ====================================================== */
+function showCheckout() {
+  if (!state.user) return showAccount("checkout");
+  const u = state.user;
+  const lines = state.cart.map((l) => ({ ...l, p: byId(l.id) })).filter((l) => l.p);
+  if (!lines.length) return closeAll();
+  const sub = lines.reduce((s, l) => s + finalPrice(l.p) * l.qty, 0);
+  modal(`${modalHead("Finalizar pedido", `${lines.reduce((s, l) => s + l.qty, 0)} artículo(s) · ${esc(u.nombre)}`)}
+    <form id="checkoutForm" novalidate>
+      <div class="field">Entrega
+        <div class="seg">
+          <label><input type="radio" name="entrega" value="delivery" checked><span style="display:flex;gap:6px;align-items:center">${ic("truck")}Delivery</span><small>+${money(CONFIG.costoDelivery)}</small></label>
+          <label><input type="radio" name="entrega" value="retiro"><span style="display:flex;gap:6px;align-items:center">${ic("store")}Retiro</span><small>En la tienda · Gratis</small></label>
+        </div></div>
+      <div id="addrBlock">
+        ${locationFields(u)}
+        <label class="check-row"><input type="checkbox" name="guardarDir">Guardar como mi dirección de entrega</label>
+      </div>
+      <label class="field">Método de pago<span class="input">${ic("wallet")}<select name="pago"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta al recibir</option></select></span></label>
+      <label class="field">Nota (opcional)<span class="input">${ic("pencil")}<input name="nota" maxlength="500" placeholder="Ej: modelo exacto, color…"></span></label>
+      <div class="ck-items">${lines.map((l) => `<div><span>${l.qty} × ${esc(l.p.nombre)}</span><b>${money(finalPrice(l.p) * l.qty)}</b></div>`).join("")}</div>
+      <div class="sum"><span>Subtotal</span><span>${money(sub)}</span></div>
+      <div class="sum" id="ckShip"><span>Delivery</span><span>${money(CONFIG.costoDelivery)}</span></div>
+      <div class="sum total" style="margin:8px 0 14px"><span>Total</span><span id="ckTotal">${money(sub + CONFIG.costoDelivery)}</span></div>
+      ${formError()}
+      <button class="btn btn-yellow btn-lg btn-block">${ic("check")}Confirmar pedido</button>
+      <div class="note">${ic("info")}Tu pedido llega directo a la tienda. Aquí mismo verás cuando lo confirmemos, preparemos y enviemos.</div>
+    </form>`);
+  $("#checkoutForm").addEventListener("change", (e) => {
+    if (e.target.name !== "entrega") return;
+    const d = e.currentTarget.entrega.value === "delivery";
+    $("#ckTotal").textContent = money(sub + (d ? CONFIG.costoDelivery : 0));
+    $("#ckShip").style.display = d ? "" : "none";
+    $("#addrBlock").style.display = d ? "" : "none";
+  });
+}
+
+async function placeOrder(form) {
+  const f = Object.fromEntries(new FormData(form));
+  const delivery = f.entrega === "delivery";
+  const loc = delivery ? readLocation(form) : null;
+  if (delivery && (!loc.direccion || !loc.sector)) return showFormError(form, "Escribe la dirección y el sector de entrega.");
+  if (!state.cart.length) return closeAll();
+  setBusy(form, true, "Enviando pedido…");
+  const { data: order, error } = await sb.rpc("crear_pedido", {
+    p_items: state.cart.map((l) => ({ id: l.id, qty: l.qty })),
+    p_entrega: delivery ? "delivery" : "retiro",
+    p_direccion: delivery ? addressText(loc) : null,
+    p_lat: loc?.lat ?? null, p_lng: loc?.lng ?? null,
+    p_pago: f.pago, p_nota: f.nota || null,
+  });
+  if (error) {
+    setBusy(form, false);
+    showFormError(form, /quedan|disponible|vacío|dirección|sesión/i.test(error.message) ? error.message : "No pudimos enviar el pedido. Inténtalo de nuevo.");
+    reloadCatalog();
+    return;
+  }
+  if (delivery && f.guardarDir) {
+    const { error: e2 } = await sb.from("profiles").update(loc).eq("id", state.user.id);
+    if (!e2) Object.assign(state.user, loc);
+  }
+  state.cart = []; save();
+  state.orders = [order, ...state.orders.filter((o) => o.id !== order.id)];
+  state.bought = [...new Set([...order.items.map((i) => i.id), ...state.bought])];
+  render();
+  showOrder(order.id, true);
+  reloadCatalog();
+}
+
+function statusPill(o) { const e = ESTADOS[o.estado] || ESTADOS.pendiente; return `<span class="pill ${e.c}">${ic(e.i)}${e.t}</span>`; }
+const fmtTime = (d) => new Date(d).toLocaleString("es-DO", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+
+function showOrder(id, isNew = false) {
+  const o = state.orders.find((x) => x.id === id);
+  if (!o) return;
+  state.openOrder = id;
+  const when = Object.fromEntries((o.historial || []).map((h) => [h.estado, h.at]));
+  const pasos = pasosPedido(o.entrega);
+  const idx = pasos.indexOf(o.estado);
+  const tracker = o.estado === "cancelado"
+    ? `<div class="cancel-box">${ic("circle-x")}<div><b>Pedido cancelado</b><span>${when.cancelado ? fmtTime(when.cancelado) : ""}</span></div></div>`
+    : `<div class="tracker">${pasos.map((k, i) => `<div class="tstep ${i < idx ? "done" : i === idx ? "current" : ""}">
+        <span class="tdot">${ic(ESTADOS[k].i)}</span>
+        <div><b>${ESTADOS[k].t}</b><span>${when[k] ? fmtTime(when[k]) : i === idx ? "" : "—"}${i === idx ? ` · ${ESTADOS[k].d}` : ""}</span></div></div>`).join("")}</div>`;
+  modal(`${modalHead(isNew ? "¡Pedido recibido!" : `Pedido #${o.id}`, isNew ? `Pedido #${o.id} · ya llegó a la tienda` : fmtTime(o.created_at))}
+    ${isNew ? `<div class="ok-banner">${ic("party-popper")}<div><b>Gracias, ${esc(state.user.nombre.split(" ")[0])}.</b><span>Te avisaremos aquí cada vez que cambie el estado.</span></div></div>` : ""}
+    <div class="order-status">${statusPill(o)}<span class="live">${ic("radio")}En vivo</span></div>
+    ${tracker}
+    <div class="ck-items">${(o.items || []).map((i) => `<div><span>${i.qty} × ${esc(i.nombre)}</span><b>${money(i.precio * i.qty)}</b></div>`).join("")}</div>
+    ${Number(o.envio) ? `<div class="sum"><span>Delivery</span><span>${money(Number(o.envio))}</span></div>` : ""}
+    <div class="sum total" style="margin:6px 0 12px"><span>Total</span><span>${money(Number(o.total))}</span></div>
+    <div class="note">${ic(o.entrega === "delivery" ? "map-pin" : "store")}${o.entrega === "delivery" ? esc(o.direccion || "") : "Retiro en la tienda"} · Pago: ${esc(o.pago || "")}</div>
+    <div style="display:grid;gap:8px;margin-top:14px">
+      ${o.estado === "pendiente" ? `<button class="btn btn-outline btn-block" data-action="cancel-order" data-id="${o.id}">${ic("x")}Cancelar pedido</button>` : ""}
+      <a class="match btn-block" href="${waLink(`Hola, tengo una pregunta sobre mi pedido #${o.id}.`)}" target="_blank" rel="noopener">${ic("message-circle")}¿Dudas sobre tu pedido? Escríbenos</a>
+      ${isNew ? `<button class="btn btn-dark btn-block" data-action="close">Seguir comprando</button>` : `<button class="btn btn-outline btn-block" data-action="account">${ic("arrow-left")}Mis pedidos</button>`}
+    </div>`);
+}
+
+async function cancelOrder(id) {
+  if (!confirm("¿Seguro que quieres cancelar este pedido?")) return;
+  const { data, error } = await sb.rpc("cancelar_mi_pedido", { p_id: id });
+  if (error) return toast(/confirmado/.test(error.message) ? error.message : "No pudimos cancelar el pedido.", "alert-circle");
+  state.orders = state.orders.map((o) => (o.id === id ? data : o));
+  showOrder(id); render(); reloadCatalog(); toast("Pedido cancelado", "circle-x");
+}
+
+/* Tiempo real: estado de mis pedidos y existencia de productos */
+let ordersChannel = null;
+function subscribeOrders() {
+  if (ordersChannel) { sb.removeChannel(ordersChannel); ordersChannel = null; }
+  if (!state.user) return;
+  ordersChannel = sb.channel("mis-pedidos")
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `user_id=eq.${state.user.id}` }, ({ new: o }) => {
+      const prev = state.orders.find((x) => x.id === o.id);
+      state.orders = state.orders.some((x) => x.id === o.id) ? state.orders.map((x) => (x.id === o.id ? o : x)) : [o, ...state.orders];
+      if (prev && prev.estado !== o.estado) toast(`Pedido #${o.id}: ${ESTADOS[o.estado].t}`, ESTADOS[o.estado].i);
+      if (state.openOrder === o.id && $("#modal").classList.contains("open")) showOrder(o.id);
+      render();
+    })
+    .subscribe();
+}
+let catalogTimer = null;
+function reloadCatalog() {
+  clearTimeout(catalogTimer);
+  catalogTimer = setTimeout(async () => { try { await loadCatalog(); render(); } catch {} }, 400);
+}
+function subscribeCatalog() {
+  sb.channel("catalogo")
+    .on("postgres_changes", { event: "*", schema: "public", table: "products" }, reloadCatalog)
+    .on("postgres_changes", { event: "*", schema: "public", table: "categories" }, reloadCatalog)
+    .subscribe();
+}
+
+/* ---------- Delegación de eventos ---------- */
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-action]");
+  if (!el || el.disabled) return;
+  const id = Number(el.dataset.id);
+  const p = id ? byId(id) : null;
+  const go = (patch) => { Object.assign(state, { cat: null, list: null, q: "", sort: "" }, patch); $("#searchInput").value = state.q; closeAll(); render(); scrollTo({ top: 0, behavior: "smooth" }); };
+  switch (el.dataset.action) {
+    case "home": go({ view: "home" }); break;
+    case "catalog": go({ view: "catalog" }); break;
+    case "cat": go({ view: "catalog", cat: el.dataset.val }); break;
+    case "list": go({ view: "catalog", list: el.dataset.val }); break;
+    case "scroll-cats": $("#catSections").scrollIntoView({ behavior: "smooth", block: "start" }); break;
+    case "qty+": state.qty[id] = Math.min((state.qty[id] || 1) + 1, p.stock); showDetail(id); break;
+    case "qty-": state.qty[id] = Math.max((state.qty[id] || 1) - 1, 1); showDetail(id); break;
+    case "add": if (addToCart(id, state.qty[id] || 1)) { state.qty[id] = 1; closeAll(); } break;
+    case "buy": if (addToCart(id, state.qty[id] || 1) || state.cart.some((l) => l.id === id)) showCheckout(); break;
+    case "detail": showDetail(id); break;
+    case "cart": openPanel($("#cartDrawer")); break;
+    case "cart+": { const l = state.cart.find((x) => x.id === id); if (l.qty < p.stock) l.qty++; else toast(`Máximo disponible: ${p.stock}`, "alert-circle"); save(); render(); break; }
+    case "cart-": { const l = state.cart.find((x) => x.id === id); l.qty > 1 ? l.qty-- : (state.cart = state.cart.filter((x) => x.id !== id)); save(); render(); break; }
+    case "remove": state.cart = state.cart.filter((x) => x.id !== id); save(); render(); break;
+    case "checkout": showCheckout(); break;
+    case "account": showAccount(); break;
+    case "logout": closeAll(); sb.auth.signOut().then(() => { Object.assign(state, { user: null, orders: [], bought: [] }); subscribeOrders(); render(); toast("Sesión cerrada", "log-out"); }); break;
+    case "order": showOrder(id); break;
+    case "cancel-order": cancelOrder(id); break;
+    case "retry": init(); break;
+    case "auth-mode": showAccount(el.dataset.next, el.dataset.val); break;
+    case "edit-profile": showEditProfile(); break;
+    case "gps": useGps(el); break;
+    case "forgot": wa(`Hola, olvidé la contraseña de mi cuenta en la tienda. Mi cédula es: `); break;
+    case "close": closeAll(); state.openOrder = null; break;
+    case "match": wa(`Hola, vi más barato el producto "${p.nombre}" (${money(finalPrice(p))} en su tienda). ¿Me igualan el precio?`); break;
+    case "notify": wa(`Hola, avísenme cuando llegue: "${p.nombre}".`); break;
+    case "whatsapp": wa(`Hola ${CONFIG.marca}, tengo una consulta.`); break;
+  }
+});
+document.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (e.target.id === "searchForm") {
+    state.q = $("#searchInput").value.trim();
+    Object.assign(state, { view: state.q ? "catalog" : "home", cat: null, list: null, sort: "" });
+    render(); scrollTo({ top: 0, behavior: "smooth" });
+  } else if (e.target.id === "loginForm") {
+    doLogin(e.target);
+  } else if (e.target.id === "signupForm") {
+    doSignup(e.target);
+  } else if (e.target.id === "profileForm") {
+    saveProfile(e.target);
+  } else if (e.target.id === "checkoutForm") {
+    placeOrder(e.target);
+  }
+});
+document.addEventListener("change", (e) => {
+  if (e.target.id !== "sort") return;
+  state.sort = e.target.value; render();
+});
+document.addEventListener("input", (e) => {
+  if (!e.target.matches("[data-cedula]")) return;
+  const el = e.target, before = el.value.length, pos = el.selectionStart;
+  el.value = Cedula.formato(el.value);
+  const p = Math.max(0, pos + el.value.length - before); el.setSelectionRange(p, p);
+  updateCedulaHint(el);
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+
+async function init() {
+  $("#app").innerHTML = `<div class="empty" style="margin-top:40px">${ic("loader-circle")}Cargando catálogo…</div>`; refreshIcons();
+  try {
+    if (!sb) throw new Error("sin conexión");
+    await loadCatalog();
+  } catch {
+    $("#app").innerHTML = `<div class="empty" style="margin-top:40px">${ic("wifi-off")}No pudimos cargar el catálogo. Revisa tu conexión.<button class="btn btn-dark" data-action="retry">${ic("refresh-cw")}Reintentar</button></div>`;
+    refreshIcons(); return;
+  }
+  render(); loadUser(); subscribeCatalog();
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Configuración local de herramientas
+.claude/
+.vercel/
+.vscode/
+.idea/
+
+# Variables y claves secretas (nunca subirlas)
+.env
+.env.*
+supabase/.temp/
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+node_modules/
