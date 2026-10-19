@@ -6,7 +6,32 @@
 <title>Romana CompuService</title>
 <meta name="description" content="Romana CompuService: computadoras, repuestos, accesorios y servicio técnico en La Romana">
 <meta name="theme-color" content="#0a0a0a">
-<link rel="icon" href="logo.svg">
+<meta name="color-scheme" content="light dark">
+<script>
+  /* Aplica el tema guardado antes de pintar (evita el destello blanco) */
+  try { const t = localStorage.getItem("tc_theme"); if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; } catch {}
+</script>
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="CompuService">
+<!-- Vista previa al compartir el enlace (WhatsApp, Instagram, Facebook) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Romana CompuService">
+<meta property="og:title" content="Romana CompuService · Tienda en línea">
+<meta property="og:description" content="Computadoras, repuestos y servicio técnico en La Romana. Delivery, garantía y ofertas.">
+<meta property="og:url" content="https://romanacompuservice-tienda.vercel.app/">
+<meta property="og:image" content="https://romanacompuservice-tienda.vercel.app/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Logo de Romana CompuService: computadoras, repuestos y servicio técnico">
+<meta property="og:locale" content="es_DO">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://romanacompuservice-tienda.vercel.app/og-image.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,6 +54,16 @@
     --warn: #b45309;
     --danger: #d92d20;
     --wa: #25d366;
+    --header-bg: rgba(255,255,255,.82);
+    --tabbar-bg: rgba(255,255,255,.92);
+    --thumb-hi: #ffffff;
+    --danger-soft: #fdecea;
+    --warn-soft: #fff4e5;
+    --info: #1d4ed8;
+    --info-soft: #eaf1ff;
+    --service-ink: #3d3b00;
+    --dark-hover: #262626;
+    --chip-ink-on-dark: #fff;
     --r-sm: 10px;
     --r: 16px;
     --r-lg: 24px;
@@ -37,6 +72,31 @@
     --shadow-lg: 0 24px 60px -20px rgba(0,0,0,.35);
     --ease: cubic-bezier(.2,.8,.2,1);
   }
+  /* ---------- Modo noche ---------- */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c0c0b; --surface: #161614; --surface-2: #20201d; --ink: #f2f2ea; --ink-2: #cfcfc6; --muted: #9b9b91; --line: #2b2b27;
+      --black: #000000; --yellow-soft: #2e2c0a; --ok: #3ccf7c; --ok-soft: #12301f; --warn: #f5a524; --danger: #ff6b5e;
+      --header-bg: rgba(14,14,13,.82); --tabbar-bg: rgba(14,14,13,.92); --thumb-hi: #262622;
+      --danger-soft: #3a1714; --warn-soft: #36260b; --info: #93b4ff; --info-soft: #172344; --service-ink: #3d3b00; --dark-hover: #1f1f1d;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -8px rgba(0,0,0,.6);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0c0b; --surface: #161614; --surface-2: #20201d; --ink: #f2f2ea; --ink-2: #cfcfc6; --muted: #9b9b91; --line: #2b2b27;
+    --black: #000000; --yellow-soft: #2e2c0a; --ok: #3ccf7c; --ok-soft: #12301f; --warn: #f5a524; --danger: #ff6b5e;
+    --header-bg: rgba(14,14,13,.82); --tabbar-bg: rgba(14,14,13,.92); --thumb-hi: #262622;
+    --danger-soft: #3a1714; --warn-soft: #36260b; --info: #93b4ff; --info-soft: #172344; --service-ink: #3d3b00; --dark-hover: #1f1f1d;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -8px rgba(0,0,0,.6);
+    color-scheme: dark;
+  }
+  /* En modo noche los botones negros llevan borde para no perderse en el fondo */
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn-dark, :root:not([data-theme="light"]) .icon-btn.dark { border: 1px solid #3a3a35; } }
+  :root[data-theme="dark"] .btn-dark, :root[data-theme="dark"] .icon-btn.dark { border: 1px solid #3a3a35; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero { box-shadow: inset 0 0 0 1px #2a2a24; } }
+  :root[data-theme="dark"] .hero { box-shadow: inset 0 0 0 1px #2a2a24; }
+  body, header, .card, .modal, .drawer, .tabbar { transition: background-color .3s ease, border-color .3s ease, color .3s ease; }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body { margin: 0; font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
@@ -53,7 +113,7 @@
   .announce .lucide { color: var(--yellow); width: 15px; height: 15px; }
 
   /* ---------- Header ---------- */
-  header { position: sticky; top: 0; z-index: 30; background: rgba(255,255,255,.82); backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px); border-bottom: 1px solid var(--line); }
+  header { position: sticky; top: 0; z-index: 30; background: var(--header-bg); backdrop-filter: saturate(180%) blur(14px); -webkit-backdrop-filter: saturate(180%) blur(14px); border-bottom: 1px solid var(--line); }
   .bar { display: flex; gap: 14px; align-items: center; padding-top: 12px; padding-bottom: 12px; }
   .logo { display: flex; align-items: center; gap: 10px; cursor: pointer; white-space: nowrap; }
   .logo img { width: 42px; height: 42px; border-radius: 10px; display: block; }
@@ -106,7 +166,7 @@
   .btn-yellow { background: var(--yellow); color: var(--black); box-shadow: 0 6px 20px -6px rgba(245,233,0,.7); }
   .btn-yellow:hover { background: var(--yellow-2); }
   .btn-dark { background: var(--black); color: #fff; }
-  .btn-dark:hover { background: #262626; }
+  .btn-dark:hover { background: var(--dark-hover); }
   .btn-glass { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.18); }
   .btn-glass:hover { background: rgba(255,255,255,.15); }
   .btn-outline { background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
@@ -150,7 +210,7 @@
   /* ---------- Product card ---------- */
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 10px; display: flex; flex-direction: column; gap: 8px; position: relative; transition: transform .25s var(--ease), box-shadow .25s, border-color .25s; }
   .card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: transparent; }
-  .thumb { position: relative; aspect-ratio: 1/1; border-radius: 12px; background: radial-gradient(circle at 30% 20%, #ffffff, var(--surface-2) 70%); display: grid; place-items: center; cursor: pointer; overflow: hidden; }
+  .thumb { position: relative; aspect-ratio: 1/1; border-radius: 12px; background: radial-gradient(circle at 30% 20%, var(--thumb-hi), var(--surface-2) 70%); display: grid; place-items: center; cursor: pointer; overflow: hidden; }
   .thumb .lucide { width: 38%; height: 38%; stroke-width: 1.4; color: var(--ink-2); transition: transform .4s var(--ease); }
   .card:hover .thumb .lucide { transform: scale(1.08) rotate(-4deg); }
 
@@ -196,7 +256,7 @@
   .fly svg { width: 36px; height: 36px; color: var(--black); stroke-width: 1.8; }
   .fly img { width: 100%; height: 100%; object-fit: cover; }
   .float-num { position: fixed; z-index: 95; transform: translate(-50%, -50%); pointer-events: none; font-weight: 800; font-size: 20px; color: var(--black); background: var(--yellow); border: 2px solid var(--black); border-radius: 999px; padding: 2px 10px; animation: floatUp .9s var(--ease) forwards; box-shadow: 0 8px 18px -6px rgba(0,0,0,.35); }
-  .float-num.minus { background: #fff; color: var(--danger); border-color: var(--danger); }
+  .float-num.minus { background: var(--surface); color: var(--danger); border-color: var(--danger); }
   @keyframes floatUp { 0% { opacity: 0; transform: translate(-50%, -20%) scale(.5); } 20% { opacity: 1; transform: translate(-50%, -80%) scale(1.15); } 100% { opacity: 0; transform: translate(-50%, -260%) scale(.9); } }
   .spark { position: fixed; z-index: 94; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; pointer-events: none; }
   .btn.added { background: var(--ok) !important; color: #fff !important; animation: addedPop .45s var(--ease); }
@@ -235,7 +295,8 @@
   .service .ic { width: 72px; height: 72px; border-radius: 20px; background: var(--black); color: var(--yellow); display: grid; place-items: center; }
   .service .ic .lucide { width: 34px; height: 34px; }
   .service h3 { margin: 0 0 6px; font-size: clamp(20px, 3vw, 28px); letter-spacing: -.6px; }
-  .service p { margin: 0; color: #3d3b00; }
+  .service { color: #0f0f0f; }
+  .service p { margin: 0; color: var(--service-ink); }
   .service ul { margin: 10px 0 0; padding: 0; list-style: none; display: flex; gap: 14px; flex-wrap: wrap; font-size: 13.5px; font-weight: 600; }
   .service li { display: inline-flex; align-items: center; gap: 6px; }
 
@@ -256,7 +317,7 @@
   .line .t { font-size: 13.5px; font-weight: 700; line-height: 1.3; margin-bottom: 6px; }
   .line .controls { display: flex; align-items: center; gap: 8px; }
   .trash { border: 0; background: none; color: var(--muted); width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; }
-  .trash:hover { color: var(--danger); background: #fdecea; }
+  .trash:hover { color: var(--danger); background: var(--danger-soft); }
   .sum { display: flex; justify-content: space-between; font-size: 14px; }
   .sum.save { color: var(--ok); font-weight: 700; }
   .sum.total { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
@@ -296,7 +357,7 @@
   .hint .lucide { width: 14px; height: 14px; }
   .check-row { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; margin: 4px 0 14px; cursor: pointer; }
   .check-row input { width: 18px; height: 18px; accent-color: var(--black); }
-  .form-err { display: flex; gap: 8px; align-items: flex-start; background: #fdecea; color: var(--danger); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; margin-bottom: 12px; }
+  .form-err { display: flex; gap: 8px; align-items: flex-start; background: var(--danger-soft); color: var(--danger); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; font-weight: 600; margin-bottom: 12px; }
   .form-err[hidden] { display: none; }
   .loc-box, .loc-card { border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-bottom: 14px; background: var(--surface-2); }
   .loc-box .field input { background: var(--surface); }
@@ -322,10 +383,10 @@
   .order strong { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
   .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 3px 8px; background: var(--surface-2); color: var(--ink-2); }
   .pill .lucide { width: 12px; height: 12px; }
-  .pill.warn { background: #fff4e5; color: var(--warn); }
-  .pill.info { background: #eaf1ff; color: #1d4ed8; }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.info { background: var(--info-soft); color: var(--info); }
   .pill.ok { background: var(--ok-soft); color: var(--ok); }
-  .pill.bad { background: #fdecea; color: var(--danger); }
+  .pill.bad { background: var(--danger-soft); color: var(--danger); }
   .order-status { display: flex; justify-content: space-between; align-items: center; margin: 4px 0 10px; }
   .live { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: var(--ok); }
   .live .lucide { width: 14px; height: 14px; }
@@ -344,7 +405,7 @@
   .tstep.current .tdot { background: var(--yellow); color: var(--black); box-shadow: 0 0 0 6px rgba(255,252,58,.35); }
   .ok-banner, .cancel-box { display: flex; gap: 12px; align-items: center; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; }
   .ok-banner { background: var(--yellow-soft); }
-  .cancel-box { background: #fdecea; color: var(--danger); }
+  .cancel-box { background: var(--danger-soft); color: var(--danger); }
   .ok-banner .lucide, .cancel-box .lucide { width: 26px; height: 26px; }
   .ok-banner b, .cancel-box b { display: block; }
   .ok-banner span, .cancel-box span { font-size: 13px; color: var(--ink-2); }
@@ -374,6 +435,22 @@
   .wa-float { position: fixed; right: 18px; bottom: 18px; z-index: 30; background: var(--wa); color: #fff; border: 0; border-radius: 999px; height: 56px; padding: 0 20px 0 16px; display: flex; align-items: center; gap: 8px; font-weight: 700; box-shadow: 0 10px 30px -8px rgba(37,211,102,.7); transition: transform .2s; }
   .wa-float:hover { transform: translateY(-2px); }
   .wa-float .lucide { width: 24px; height: 24px; }
+  .install-float { position: fixed; right: 18px; bottom: 86px; z-index: 30; background: var(--yellow); color: #0a0a0a; border: 2px solid #0a0a0a; border-radius: 999px; height: 50px; padding: 0 18px 0 14px; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; box-shadow: 0 10px 26px -8px rgba(0,0,0,.45); transition: transform .2s; animation: installIn .6s var(--ease) both, installNudge 5s ease-in-out 2s infinite; }
+  .install-float:hover { transform: translateY(-2px); }
+  .install-float .lucide { width: 22px; height: 22px; }
+  @keyframes installIn { from { opacity: 0; transform: translateY(16px) scale(.9); } to { opacity: 1; transform: none; } }
+  @keyframes installNudge { 0%, 88%, 100% { rotate: 0deg; } 91% { rotate: -6deg; } 94% { rotate: 5deg; } 97% { rotate: -3deg; } }
+  .theme-btn { width: 44px; padding: 0; justify-content: center; }
+  .theme-btn .lucide { transition: transform .5s var(--ease); }
+  .theme-btn:hover .lucide { transform: rotate(-25deg); }
+  .install-steps { display: grid; gap: 10px; margin: 6px 0 14px; padding: 0; list-style: none; counter-reset: st; }
+  .install-steps li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: center; background: var(--surface-2); border-radius: 14px; padding: 10px 12px; font-size: 14px; }
+  .install-steps li::before { counter-increment: st; content: counter(st); width: 34px; height: 34px; border-radius: 10px; background: var(--black); color: var(--yellow); display: grid; place-items: center; font-weight: 800; }
+  .install-steps .lucide { width: 18px; height: 18px; vertical-align: -3px; margin: 0 2px; }
+  .install-head { display: flex; gap: 14px; align-items: center; margin-bottom: 12px; }
+  .install-head img { width: 64px; height: 64px; border-radius: 16px; box-shadow: var(--shadow); }
+  .install-head b { display: block; font-size: 16px; }
+  .install-head span { font-size: 13px; color: var(--muted); }
 
   /* ---------- Mobile bottom nav ---------- */
   .tabbar { display: none; }
@@ -417,7 +494,7 @@
     .service { grid-template-columns: 1fr; }
     .stats { gap: 18px; }
     .perks-list { grid-template-columns: 1fr 1fr 1fr; }
-    .tabbar { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; background: rgba(255,255,255,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); }
+    .tabbar { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; background: var(--tabbar-bg); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); }
     .tabbar button { position: relative; border: 0; background: none; display: grid; justify-items: center; gap: 2px; font-size: 11px; font-weight: 600; color: var(--muted); padding: 6px 0; }
     .tabbar button.on { color: var(--black); }
     .tabbar button.on .lucide { background: var(--yellow); border-radius: 999px; padding: 3px 12px; width: 46px; }
@@ -425,6 +502,8 @@
     .tabbar .badge { top: 0; right: calc(50% - 26px); }
     .wa-float { bottom: 84px; height: 52px; width: 52px; padding: 0; justify-content: center; }
     .wa-float span { display: none; }
+    .install-float { bottom: 146px; right: 18px; height: 52px; width: 52px; padding: 0; justify-content: center; }
+    .install-float span { display: none; }
     .toast { bottom: 90px; }
     footer { padding-bottom: 70px; }
   }
@@ -440,6 +519,7 @@
     <div class="logo" data-action="home"><img src="logo.svg" alt=""><div><b>Romana CompuService</b><small>Tecnología · Servicio</small></div></div>
     <form class="search" id="searchForm" role="search"><i data-lucide="search"></i><input id="searchInput" type="search" placeholder="Buscar laptop, cargador, SSD, RAM…" aria-label="Buscar productos"></form>
     <div class="head-actions">
+      <button class="icon-btn theme-btn" data-action="theme" id="themeBtn" aria-label="Activar modo noche" title="Modo noche"><i data-lucide="moon"></i></button>
       <button class="icon-btn account" data-action="account" id="accountBtn"></button>
       <button class="icon-btn dark" data-action="cart" aria-label="Carrito"><i data-lucide="shopping-bag"></i><span class="lbl">Carrito</span><span class="badge" id="cartCount">0</span></button>
     </div>
@@ -449,6 +529,7 @@
 
 <main class="wrap" id="app"></main>
 <footer id="footer"></footer>
+<button class="install-float" data-action="install" id="installBtn" hidden aria-label="Instalar la app en tu celular" title="Instalar la app"><i data-lucide="smartphone"></i><span>Instalar app</span></button>
 <button class="wa-float" data-action="whatsapp" aria-label="Escríbenos por WhatsApp"><i data-lucide="message-circle"></i><span>WhatsApp</span></button>
 
 <nav class="tabbar" id="tabbar">
@@ -1248,6 +1329,8 @@ document.addEventListener("click", (e) => {
     case "order": showOrder(id); break;
     case "cancel-order": cancelOrder(id); break;
     case "retry": init(); break;
+    case "theme": toggleTheme(); break;
+    case "install": installApp(); break;
     case "auth-mode": showAccount(el.dataset.next, el.dataset.val); break;
     case "edit-profile": showEditProfile(); break;
     case "gps": useGps(el); break;
@@ -1298,6 +1381,68 @@ async function init() {
   }
   render(); loadUser(); subscribeCatalog();
 }
+/* ======================================================
+   Modo noche (se recuerda en el dispositivo)
+   ====================================================== */
+const darkMQ = window.matchMedia("(prefers-color-scheme: dark)");
+const currentTheme = () => document.documentElement.dataset.theme || (darkMQ.matches ? "dark" : "light");
+function paintThemeBtn() {
+  const dark = currentTheme() === "dark";
+  const b = $("#themeBtn");
+  b.innerHTML = ic(dark ? "sun" : "moon");
+  b.title = dark ? "Modo día" : "Modo noche";
+  b.setAttribute("aria-label", dark ? "Activar modo día" : "Activar modo noche");
+  const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = dark ? "#000000" : "#0a0a0a";
+  refreshIcons();
+}
+function toggleTheme() {
+  const next = currentTheme() === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem("tc_theme", next); } catch {}
+  paintThemeBtn();
+  toast(next === "dark" ? "Modo noche activado" : "Modo día activado", next === "dark" ? "moon" : "sun");
+}
+darkMQ.addEventListener?.("change", paintThemeBtn);
+
+/* ======================================================
+   Instalar la tienda como app (Android, iPhone y computadora)
+   ====================================================== */
+let installPrompt = null;
+const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isAndroid = /android/i.test(navigator.userAgent);
+const isIOSSafari = isIOS && !/crios|fxios|edgios|opios/i.test(navigator.userAgent);
+function updateInstallBtn() {
+  $("#installBtn").hidden = isStandalone() || !(installPrompt || isIOS || isAndroid);
+}
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e; updateInstallBtn(); });
+window.addEventListener("appinstalled", () => { installPrompt = null; updateInstallBtn(); closeAll(); toast("¡App instalada! Búscala en tu pantalla de inicio", "smartphone"); });
+
+async function installApp() {
+  if (installPrompt) {
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    installPrompt = null; updateInstallBtn();
+    if (outcome === "accepted") toast("Instalando la app…", "smartphone");
+    return;
+  }
+  const head = `<div class="install-head"><img src="apple-touch-icon.png" alt=""><div><b>${esc(CONFIG.marca)}</b><span>Tu tienda a un toque, desde la pantalla de inicio.</span></div></div>`;
+  let steps;
+  if (isIOS && !isIOSSafari) {
+    steps = `<div class="note" style="margin:0 0 12px">${ic("info")}En iPhone solo se puede instalar desde <b>Safari</b>. Copia el enlace y ábrelo en Safari.</div>
+      <ol class="install-steps"><li><span>Abre esta página en Safari</span></li><li><span>Toca <b>Compartir</b> ${ic("share")} abajo en la pantalla</span></li><li><span>Elige <b>Agregar a pantalla de inicio</b> ${ic("square-plus")}</span></li><li><span>Toca <b>Agregar</b> arriba a la derecha</span></li></ol>`;
+  } else if (isIOS) {
+    steps = `<ol class="install-steps"><li><span>Toca <b>Compartir</b> ${ic("share")} abajo en la pantalla</span></li><li><span>Desliza y elige <b>Agregar a pantalla de inicio</b> ${ic("square-plus")}</span></li><li><span>Toca <b>Agregar</b> arriba a la derecha</span></li></ol>`;
+  } else {
+    steps = `<ol class="install-steps"><li><span>Toca el menú ${ic("ellipsis-vertical")} arriba a la derecha del navegador</span></li><li><span>Elige <b>Instalar app</b> o <b>Agregar a pantalla de inicio</b></span></li><li><span>Confirma con <b>Instalar</b></span></li></ol>`;
+  }
+  modal(`${modalHead("Instala la app", "Gratis, sin tienda de apps y sin ocupar espacio.")}${head}${steps}
+    <button class="btn btn-dark btn-block" data-action="close">Entendido</button>`);
+}
+
+if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+paintThemeBtn();
+updateInstallBtn();
 init();
 </script>
 </body>
