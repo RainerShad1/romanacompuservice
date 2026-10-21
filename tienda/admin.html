@@ -115,6 +115,10 @@
   .box { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 18px; margin-bottom: 14px; }
   .box h3 { margin: 0 0 4px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
   .box > p { margin: 0 0 14px; color: var(--muted); font-size: 13.5px; }
+  .toggle-row { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); cursor: pointer; }
+  .toggle-row input { width: 20px; height: 20px; accent-color: #0a0a0a; flex: none; }
+  .toggle-row b { display: block; font-size: 14px; }
+  .toggle-row small { color: var(--muted); font-size: 12.5px; }
   .crow { display: grid; grid-template-columns: 44px minmax(0, 1fr) 190px 90px auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
   .crow:first-of-type { border-top: 0; }
   .cicon { width: 44px; height: 44px; border-radius: 12px; background: var(--yellow); display: grid; place-items: center; }
@@ -628,6 +632,8 @@ function renderCategories() {
 }
 
 /* ---------- Configuración ---------- */
+const PAGOS_TODOS = ["Efectivo", "Transferencia", "Tarjeta al recibir"];
+const pagosOn = () => (Array.isArray(db.config.pagos) && db.config.pagos.length ? db.config.pagos : PAGOS_TODOS);
 function renderConfig() {
   const c = db.config;
   const f = (k, label, hint = "", type = "text", full = false) => `<label class="field ${full ? "full" : ""}">${label}${hint ? `<small>${hint}</small>` : ""}<input type="${type}" data-config="${k}" value="${esc(c[k])}"></label>`;
@@ -648,6 +654,10 @@ function renderConfig() {
       ${f("costoDelivery", "Costo del delivery", "", "number")}
       ${f("moneda", "Moneda", "Ej: RD$")}
     </div></div>
+    <div class="box"><h3>${ic("truck")}Entrega y pagos</h3><p>Lo que el cliente puede elegir al finalizar su pedido. Retiro en tienda siempre está disponible.</p>
+      <label class="toggle-row"><input type="checkbox" data-config="deliveryActivo" ${c.deliveryActivo !== false ? "checked" : ""}><span><b>Delivery</b><small>Si está apagado, el cliente solo puede retirar en la tienda.</small></span></label>
+      ${PAGOS_TODOS.map((p) => `<label class="toggle-row"><input type="checkbox" data-pago="${esc(p)}" ${pagosOn().includes(p) ? "checked" : ""}><span><b>${esc(p)}</b><small>Método de pago</small></span></label>`).join("")}
+    </div>
     <div class="box"><h3>${ic("archive")}Respaldo</h3><p>Descarga una copia del catálogo (productos, categorías y configuración).</p>
       <button class="btn btn-outline" data-action="backup">${ic("download")}Descargar respaldo</button></div>`;
 }
@@ -755,9 +765,17 @@ document.addEventListener("change", async (e) => {
     if (error) { render(); return fail(error); }
     db.categorias = db.categorias.map((c) => (c.name === t.dataset.cat ? { ...c, icon: t.value } : c)); render(); return toast("Ícono actualizado");
   }
+  if (t.dataset.pago !== undefined) {
+    const pagos = [...document.querySelectorAll("[data-pago]")].filter((x) => x.checked).map((x) => x.dataset.pago);
+    if (!pagos.length) { toast("Deja al menos un método de pago", "alert-triangle"); return render(); }
+    const data = { ...db.config, pagos };
+    const { error } = await sb.from("settings").update({ data, updated_at: new Date().toISOString() }).eq("id", 1);
+    if (error) { render(); return fail(error); }
+    db.config = data; render(); return toast("Métodos de pago actualizados");
+  }
   if (t.dataset.config) {
     const k = t.dataset.config;
-    const v = t.type === "number" ? Number(t.value) || 0 : k === "whatsapp" ? t.value.replace(/\D/g, "") : k === "instagram" ? t.value.replace(/^@/, "").trim() : t.value.trim();
+    const v = t.type === "checkbox" ? t.checked : t.type === "number" ? Number(t.value) || 0 : k === "whatsapp" ? t.value.replace(/\D/g, "") : k === "instagram" ? t.value.replace(/^@/, "").trim() : t.value.trim();
     const data = { ...db.config, [k]: v };
     const { error } = await sb.from("settings").update({ data, updated_at: new Date().toISOString() }).eq("id", 1);
     if (error) { render(); return fail(error); }

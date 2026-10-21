@@ -347,6 +347,9 @@
   .seg label small { color: var(--muted); font-weight: 500; }
   .seg input { display: none; }
   .seg label:has(input:checked) { border-color: var(--black); background: var(--yellow-soft); }
+  .input input.filled { animation: filledIn 1.2s var(--ease); }
+  @keyframes filledIn { 0% { background: var(--yellow-soft); } 100% { background: transparent; } }
+  .seg label.off { opacity: .5; cursor: not-allowed; }
   .note { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: var(--muted); background: var(--surface-2); padding: 10px 12px; border-radius: 12px; margin-top: 10px; }
   .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); border-radius: 12px; padding: 4px; margin-bottom: 16px; }
   .auth-tabs button { border: 0; background: none; padding: 10px; border-radius: 9px; font-weight: 700; font-size: 14px; color: var(--muted); }
@@ -558,6 +561,10 @@
    desde admin.html (productos, categorías y configuración).
    ====================================================== */
 let CONFIG = {}, ICONS = {}, PRODUCTS = [], categories = [];
+// Delivery y métodos de pago: se activan o desactivan desde Configuración del panel
+const PAGOS_TODOS = ["Efectivo", "Transferencia", "Tarjeta al recibir"];
+const deliveryOn = () => CONFIG.deliveryActivo !== false;
+const pagosOn = () => (Array.isArray(CONFIG.pagos) && CONFIG.pagos.length ? CONFIG.pagos : PAGOS_TODOS);
 async function loadCatalog() {
   const [s, c, p] = await Promise.all([
     sb.from("settings").select("data").eq("id", 1).maybeSingle(),
@@ -628,6 +635,8 @@ const save = () => { store.set("cart", state.cart); store.set("viewed", state.vi
 
 /* ---------- Listas inteligentes ---------- */
 const available = (p) => p.stock > 0;
+// El cliente no ve cuántas unidades hay: solo "Poco stock" cuando quedan 2 o menos
+const lowStock = (p) => p.stock > 0 && p.stock <= 2;
 const lists = {
   best:     { t: "Más vendidos", i: "flame", s: "Lo que más piden nuestros clientes", f: () => [...PRODUCTS].sort((a, b) => b.vendidos - a.vendidos) },
   offers:   { t: "Ofertas del día", i: "zap", s: () => `${CONFIG.descuento}% OFF en estos productos`, f: () => PRODUCTS.filter((p) => p.oferta) },
@@ -651,7 +660,7 @@ function inspired() {
    ====================================================== */
 function card(p) {
   const fp = finalPrice(p);
-  const low = p.stock > 0 && p.stock <= 5;
+  const low = lowStock(p);
   return `<article class="card ${available(p) ? "" : "is-out"}">
     <div class="thumb" data-action="detail" data-id="${p.id}">
       ${icon(p)}
@@ -667,7 +676,7 @@ function card(p) {
       <div class="name" data-action="detail" data-id="${p.id}">${esc(p.nombre)}</div>
       <div class="prices"><span class="price">${money(fp)}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}</div>
       ${available(p)
-        ? `<span class="stock ${low ? "low" : ""}">${ic(low ? "alert-circle" : "circle-check")}${low ? `Solo quedan ${p.stock}` : "En stock"}</span>
+        ? `<span class="stock ${low ? "low" : ""}">${ic(low ? "alert-circle" : "circle-check")}${low ? "Poco stock" : "En stock"}</span>
       <div class="buy-row"><button class="btn btn-dark btn-block add-btn" data-action="add" data-id="${p.id}">${ic("shopping-bag")}Agregar</button></div>`
         : `<div class="buy-row"><button class="btn btn-outline btn-block add-btn" data-action="notify" data-id="${p.id}">${ic("bell")}Avísame</button></div>`}
     </div>
@@ -705,12 +714,12 @@ function renderHome() {
       <div class="hero-art">
         <img src="logo.svg" alt="${esc(CONFIG.nombre)}">
         <div class="float-card b"><span class="ic">${ic("shield-check")}</span><div>Garantía<small>en todos los productos</small></div></div>
-        <div class="float-card a"><span class="ic">${ic("truck")}</span><div>Delivery<small>La Romana y alrededores</small></div></div>
+        ${deliveryOn() ? `<div class="float-card a"><span class="ic">${ic("truck")}</span><div>Delivery<small>La Romana y alrededores</small></div></div>` : `<div class="float-card a"><span class="ic">${ic("store")}</span><div>Retiro en tienda<small>Pide aquí y pasa a buscarlo</small></div></div>`}
       </div>
     </div>
     <div class="features">
       <div class="feature"><span class="ic">${ic("badge-percent")}</span><div><b>Ofertas hasta ${CONFIG.descuento}%</b><span>Descuentos cada día</span></div></div>
-      <div class="feature"><span class="ic">${ic("truck")}</span><div><b>Delivery disponible</b><span>Te lo llevamos a casa</span></div></div>
+      ${deliveryOn() ? `<div class="feature"><span class="ic">${ic("truck")}</span><div><b>Delivery disponible</b><span>Te lo llevamos a casa</span></div></div>` : `<div class="feature"><span class="ic">${ic("store")}</span><div><b>Retiro en tienda</b><span>Pide aquí y pasa a buscarlo</span></div></div>`}
       <div class="feature"><span class="ic">${ic("shield-check")}</span><div><b>Garantía en todos</b><span>Compra con confianza</span></div></div>
       <div class="feature"><span class="ic">${ic("wrench")}</span><div><b>Servicio técnico</b><span>Reparación y mantenimiento</span></div></div>
     </div>`;
@@ -788,7 +797,7 @@ function renderFooter() {
 
 function render() {
   document.title = CONFIG.marca + " - Tienda";
-  $("#announce").innerHTML = `<span>${ic("truck")}Delivery en La Romana</span><span>${ic("shield-check")}Garantía en todos los productos</span><span>${ic("badge-percent")}Ofertas hasta ${CONFIG.descuento}% OFF</span><span>${ic("message-circle")}${esc(CONFIG.telefono)}</span>`;
+  $("#announce").innerHTML = `${deliveryOn() ? `<span>${ic("truck")}Delivery en La Romana</span>` : `<span>${ic("store")}Pide en línea y retira en tienda</span>`}<span>${ic("shield-check")}Garantía en todos los productos</span><span>${ic("badge-percent")}Ofertas hasta ${CONFIG.descuento}% OFF</span><span>${ic("message-circle")}${esc(CONFIG.telefono)}</span>`;
   $("#catsNav").innerHTML = `<button class="chip ${state.view === "catalog" && !state.cat && !state.list && !state.q ? "active" : ""}" data-action="catalog">${ic("layout-grid")}Todos</button>` +
     categories.map((c) => `<button class="chip ${state.cat === c ? "active" : ""}" data-action="cat" data-val="${esc(c)}">${ic(ICONS[c] || "package")}${esc(titleCase(c))}</button>`).join("");
   $("#app").innerHTML = state.view === "home" ? renderHome() : renderCatalog();
@@ -918,7 +927,7 @@ function addToCart(id, qty, srcEl) {
   const line = state.cart.find((l) => l.id === id);
   const current = line ? line.qty : 0;
   const n = Math.min(qty, p.stock - current);
-  if (n <= 0) { toast(`Máximo disponible: ${p.stock}`, "alert-circle"); return false; }
+  if (n <= 0) { toast("No hay más unidades disponibles", "alert-circle"); return false; }
   // Posiciones antes de re-dibujar (el re-dibujo reemplaza los elementos)
   const holder = srcEl && (srcEl.closest(".card") || srcEl.closest(".modal"));
   const thumb = holder && holder.querySelector(".thumb");
@@ -944,9 +953,9 @@ function showDetail(id) {
   modal(`${modalHead(esc(p.nombre), esc(titleCase(p.cat)))}
     <div class="thumb detail-thumb">${icon(p)}<div class="tags">${p.oferta ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}</div></div>
     <div class="prices"><span class="price" style="font-size:28px">${money(finalPrice(p))}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}</div>
-    <span class="stock ${p.stock <= 5 ? "low" : ""}" style="margin-top:6px">${ic(p.stock > 0 ? "package-check" : "package-x")}${p.stock > 0 ? `Disponibles: ${p.stock}` : "Agotado por ahora"}</span>
+    <span class="stock ${p.stock <= 2 ? "low" : ""}" style="margin-top:6px">${ic(p.stock > 0 ? (lowStock(p) ? "alert-circle" : "package-check") : "package-x")}${p.stock > 0 ? (lowStock(p) ? "Poco stock" : "En stock") : "Agotado por ahora"}</span>
     ${p.descripcion ? `<p style="color:var(--ink-2);font-size:14px;line-height:1.55;white-space:pre-line">${esc(p.descripcion)}</p>` : ""}
-    <div class="perks-list"><div>${ic("shield-check")}Garantía</div><div>${ic("truck")}Delivery</div><div>${ic("badge-dollar-sign")}Igualamos precio</div></div>
+    <div class="perks-list"><div>${ic("shield-check")}Garantía</div>${deliveryOn() ? `<div>${ic("truck")}Delivery</div>` : `<div>${ic("store")}Retiro en tienda</div>`}<div>${ic("badge-dollar-sign")}Igualamos precio</div></div>
     ${available(p) ? `<div class="detail-buy">
         <span class="stepper"><button data-action="qty-" data-id="${p.id}" aria-label="Menos" ${q <= 1 ? "disabled" : ""}>${ic("minus")}</button><span>${q}</span><button data-action="qty+" data-id="${p.id}" aria-label="Más" ${q >= p.stock ? "disabled" : ""}>${ic("plus")}</button></span>
         <button class="btn btn-dark" data-action="add" data-id="${p.id}">${ic("shopping-bag")}Agregar</button>
@@ -967,7 +976,8 @@ async function loadUser() {
   if (!session) { Object.assign(state, { user: null, orders: [], bought: [] }); subscribeOrders(); render(); return; }
   const { data: prof } = await sb.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
   state.user = prof || null;
-  const { data: ords } = prof ? await sb.from("orders").select("*").order("created_at", { ascending: false }).limit(30) : { data: [] };
+  // Solo los pedidos de esta cuenta (un administrador puede leer todos, pero aquí no los mezclamos)
+  const { data: ords } = prof ? await sb.from("orders").select("*").eq("user_id", prof.id).order("created_at", { ascending: false }).limit(30) : { data: [] };
   state.orders = ords || [];
   state.bought = [...new Set(state.orders.flatMap((o) => (o.items || []).map((i) => i.id)))];
   subscribeOrders();
@@ -982,7 +992,7 @@ const addressText = (u) => [u.direccion, u.sector].filter(Boolean).join(", ") + 
 const cedulaField = (value = "") => `<label class="field">Cédula<span class="input">${ic("id-card")}<input name="cedula" required inputmode="numeric" autocomplete="username" placeholder="000-0000000-0" maxlength="13" data-cedula value="${esc(Cedula.formato(value))}"></span><span class="hint" data-cedula-hint></span></label>`;
 const locationFields = (u = {}) => `
   <div class="loc-box">
-    <div class="loc-title">${ic("map-pin")}Ubicación para delivery</div>
+    <div class="loc-title">${ic("map-pin")}Mi ubicación</div>
     <label class="field">Dirección<span class="input">${ic("house")}<input name="direccion" required maxlength="300" autocomplete="street-address" placeholder="Calle, número, edificio/apto" value="${esc(u.direccion || "")}"></span></label>
     <label class="field">Sector<span class="input">${ic("map")}<input name="sector" required maxlength="120" placeholder="Ej: Villa Verde, La Romana" value="${esc(u.sector || "")}"></span></label>
     <label class="field">Referencia (opcional)<span class="input">${ic("flag")}<input name="referencia" maxlength="300" placeholder="Ej: frente al colmado, casa verde" value="${esc(u.referencia || "")}"></span></label>
@@ -1015,7 +1025,7 @@ function showAccount(next, mode = "login") {
         <button type="button" class="match btn-block" style="margin-top:8px" data-action="forgot">${ic("key-round")}¿Olvidaste tu contraseña?</button>
       </form>`);
   } else {
-    modal(`${modalHead("Crear cuenta", "Regístrate con tu cédula. Guardamos tu ubicación para el delivery.")}${tabs}
+    modal(`${modalHead("Crear cuenta", "Regístrate con tu cédula y tus datos de contacto.")}${tabs}
       <form id="signupForm" data-next="${next || ""}" novalidate>
         ${cedulaField()}
         <label class="field">Nombre completo<span class="input">${ic("user-round")}<input name="nombre" required maxlength="120" autocomplete="name" placeholder="Tu nombre y apellido"></span></label>
@@ -1081,14 +1091,52 @@ function readLocation(form) {
     lat: Number.isFinite(lat) ? lat : null, lng: Number.isFinite(lng) ? lng : null };
 }
 
+/* Código Plus de Google Maps (Open Location Code): sirve aunque la calle no tenga nombre */
+function plusCode(lat, lng) {
+  const A = "23456789CFGHJMPQRVWX";
+  let la = Math.min(Math.max(lat, -90), 89.9999999) + 90, lo = ((lng + 180) % 360 + 360) % 360, c = "";
+  for (let i = 0, d = 20; i < 5; i++, d /= 20) {
+    const y = Math.floor(la / d + 1e-9), x = Math.floor(lo / d + 1e-9);
+    la -= y * d; lo -= x * d; c += A[y] + A[x];
+    if (i === 3) c += "+";
+  }
+  return c;
+}
+
+/* Convierte las coordenadas en calle y sector (OpenStreetMap). Si no hay datos, queda el código Plus. */
+async function lookupAddress(lat, lng) {
+  const code = plusCode(lat, lng);
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&addressdetails=1&accept-language=es&lat=${lat}&lon=${lng}`);
+    if (!r.ok) throw 0;
+    const a = (await r.json()).address || {};
+    const calle = [a.road || a.pedestrian || a.residential || a.footway, a.house_number].filter(Boolean).join(" ");
+    const barrio = a.neighbourhood || a.suburb || a.quarter || a.hamlet || a.city_district;
+    const ciudad = a.city || a.town || a.village || a.municipality || a.county || a.state;
+    return { direccion: calle || `Código Plus ${code}`, sector: [...new Set([barrio, ciudad].filter(Boolean))].join(", ") || "La Romana", code };
+  } catch {
+    return { direccion: `Código Plus ${code}`, sector: "La Romana", code };
+  }
+}
+
 function useGps(btn) {
   const form = btn.closest("form"), status = form.querySelector("[data-gps-status]");
   if (!navigator.geolocation) { status.innerHTML = `<span class="bad">${ic("circle-x")}Tu dispositivo no permite compartir la ubicación.</span>`; return refreshIcons(); }
   status.innerHTML = `<span>${ic("loader-circle")}Buscando tu ubicación…</span>`; refreshIcons();
-  navigator.geolocation.getCurrentPosition((pos) => {
-    form.lat.value = pos.coords.latitude.toFixed(6); form.lng.value = pos.coords.longitude.toFixed(6);
-    status.innerHTML = gpsSaved(form.lat.value, form.lng.value); refreshIcons();
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    form.lat.value = lat.toFixed(6); form.lng.value = lng.toFixed(6);
+    status.innerHTML = `<span>${ic("loader-circle")}Buscando tu dirección…</span>`; refreshIcons();
+    const ad = await lookupAddress(lat, lng);
+    form.direccion.value = ad.direccion;
+    form.sector.value = ad.sector;
+    if (!form.referencia.value.trim()) form.referencia.value = `Código Plus ${ad.code}`;
+    [form.direccion, form.sector].forEach((i) => { i.classList.remove("filled"); void i.offsetWidth; i.classList.add("filled"); });
+    btn.disabled = false;
+    status.innerHTML = `${gpsSaved(form.lat.value, form.lng.value)}<br><span>${ic("pencil")}Completamos tu dirección. Puedes corregirla si hace falta.</span>`; refreshIcons();
   }, () => {
+    btn.disabled = false;
     status.innerHTML = `<span class="bad">${ic("circle-x")}No pudimos obtener tu ubicación. Permite el acceso o escribe la dirección.</span>`; refreshIcons();
   }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
 }
@@ -1115,7 +1163,7 @@ async function doSignup(form) {
   if ((f.nombre || "").trim().length < 3) return showFormError(form, "Escribe tu nombre completo.");
   if (telefono.length < 10) return showFormError(form, "Escribe un teléfono de 10 dígitos.");
   if ((f.password || "").length < 6) return showFormError(form, "La contraseña debe tener al menos 6 caracteres.");
-  if (!loc.direccion || !loc.sector) return showFormError(form, "Escribe tu dirección y sector para el delivery.");
+  if (!loc.direccion || !loc.sector) return showFormError(form, "Escribe tu dirección y sector (o toca “Usar mi ubicación actual”).");
   if (!f.acepto) return showFormError(form, "Debes aceptar el aviso de privacidad para crear tu cuenta.");
   Recordar.set(!!f.recordar);
   setBusy(form, true, "Creando tu cuenta…");
@@ -1159,26 +1207,28 @@ function showCheckout() {
   const lines = state.cart.map((l) => ({ ...l, p: byId(l.id) })).filter((l) => l.p);
   if (!lines.length) return closeAll();
   const sub = lines.reduce((s, l) => s + finalPrice(l.p) * l.qty, 0);
+  const dOn = deliveryOn(), pagos = pagosOn();
+  const hide = dOn ? "" : ` style="display:none"`;
   modal(`${modalHead("Finalizar pedido", `${lines.reduce((s, l) => s + l.qty, 0)} artículo(s) · ${esc(u.nombre)}`)}
     <form id="checkoutForm" novalidate>
       <div class="field">Entrega
         <div class="seg">
-          <label><input type="radio" name="entrega" value="delivery" checked><span style="display:flex;gap:6px;align-items:center">${ic("truck")}Delivery</span><small>+${money(CONFIG.costoDelivery)}</small></label>
-          <label><input type="radio" name="entrega" value="retiro"><span style="display:flex;gap:6px;align-items:center">${ic("store")}Retiro</span><small>En la tienda · Gratis</small></label>
+          <label class="${dOn ? "" : "off"}"><input type="radio" name="entrega" value="delivery" ${dOn ? "checked" : "disabled"}><span style="display:flex;gap:6px;align-items:center">${ic("truck")}Delivery</span><small>${dOn ? `+${money(CONFIG.costoDelivery)}` : "No disponible por ahora"}</small></label>
+          <label><input type="radio" name="entrega" value="retiro" ${dOn ? "" : "checked"}><span style="display:flex;gap:6px;align-items:center">${ic("store")}Retiro</span><small>En la tienda · Gratis</small></label>
         </div></div>
-      <div id="addrBlock">
+      <div id="addrBlock"${hide}>
         ${locationFields(u)}
         <label class="check-row"><input type="checkbox" name="guardarDir">Guardar como mi dirección de entrega</label>
       </div>
-      <label class="field">Método de pago<span class="input">${ic("wallet")}<select name="pago"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta al recibir</option></select></span></label>
+      <label class="field">Método de pago<span class="input">${ic("wallet")}<select name="pago">${PAGOS_TODOS.map((p) => pagos.includes(p) ? `<option>${esc(p)}</option>` : `<option disabled>${esc(p)} · no disponible</option>`).join("")}</select></span></label>
       <label class="field">Nota (opcional)<span class="input">${ic("pencil")}<input name="nota" maxlength="500" placeholder="Ej: modelo exacto, color…"></span></label>
       <div class="ck-items">${lines.map((l) => `<div><span>${l.qty} × ${esc(l.p.nombre)}</span><b>${money(finalPrice(l.p) * l.qty)}</b></div>`).join("")}</div>
       <div class="sum"><span>Subtotal</span><span>${money(sub)}</span></div>
-      <div class="sum" id="ckShip"><span>Delivery</span><span>${money(CONFIG.costoDelivery)}</span></div>
-      <div class="sum total" style="margin:8px 0 14px"><span>Total</span><span id="ckTotal">${money(sub + CONFIG.costoDelivery)}</span></div>
+      <div class="sum" id="ckShip"${hide}><span>Delivery</span><span>${money(CONFIG.costoDelivery)}</span></div>
+      <div class="sum total" style="margin:8px 0 14px"><span>Total</span><span id="ckTotal">${money(sub + (dOn ? CONFIG.costoDelivery : 0))}</span></div>
       ${formError()}
       <button class="btn btn-yellow btn-lg btn-block">${ic("check")}Confirmar pedido</button>
-      <div class="note">${ic("info")}Tu pedido llega directo a la tienda. Aquí mismo verás cuando lo confirmemos, preparemos y enviemos.</div>
+      <div class="note">${ic("info")}Tu pedido llega directo a la tienda. Aquí mismo verás cuando lo confirmemos, preparemos y ${dOn ? "enviemos" : "esté listo para retirar"}.</div>
     </form>`);
   $("#checkoutForm").addEventListener("change", (e) => {
     if (e.target.name !== "entrega") return;
@@ -1191,7 +1241,7 @@ function showCheckout() {
 
 async function placeOrder(form) {
   const f = Object.fromEntries(new FormData(form));
-  const delivery = f.entrega === "delivery";
+  const delivery = f.entrega === "delivery" && deliveryOn();
   const loc = delivery ? readLocation(form) : null;
   if (delivery && (!loc.direccion || !loc.sector)) return showFormError(form, "Escribe la dirección y el sector de entrega.");
   if (!state.cart.length) return closeAll();
@@ -1313,7 +1363,7 @@ document.addEventListener("click", (e) => {
     case "cart+": case "cart-": {
       const up = el.dataset.action === "cart+", r = el.getBoundingClientRect();
       const l = state.cart.find((x) => x.id === id);
-      if (up && l.qty >= p.stock) { toast(`Máximo disponible: ${p.stock}`, "alert-circle"); break; }
+      if (up && l.qty >= p.stock) { toast("No hay más unidades disponibles", "alert-circle"); break; }
       if (up) l.qty++; else if (l.qty > 1) l.qty--; else state.cart = state.cart.filter((x) => x.id !== id);
       save(); render();
       floatNum(up ? "+1" : "-1", r, !up);
