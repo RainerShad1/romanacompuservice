@@ -635,8 +635,6 @@ const save = () => { store.set("cart", state.cart); store.set("viewed", state.vi
 
 /* ---------- Listas inteligentes ---------- */
 const available = (p) => p.stock > 0;
-// El cliente no ve cuántas unidades hay: solo "Poco stock" cuando quedan 2 o menos
-const lowStock = (p) => p.stock > 0 && p.stock <= 2;
 const lists = {
   best:     { t: "Más vendidos", i: "flame", s: "Lo que más piden nuestros clientes", f: () => [...PRODUCTS].sort((a, b) => b.vendidos - a.vendidos) },
   offers:   { t: "Ofertas del día", i: "zap", s: () => `${CONFIG.descuento}% OFF en estos productos`, f: () => PRODUCTS.filter((p) => p.oferta) },
@@ -660,13 +658,11 @@ function inspired() {
    ====================================================== */
 function card(p) {
   const fp = finalPrice(p);
-  const low = lowStock(p);
   return `<article class="card ${available(p) ? "" : "is-out"}">
     <div class="thumb" data-action="detail" data-id="${p.id}">
       ${icon(p)}
       <div class="tags">
         ${p.oferta && available(p) ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}
-        ${low ? `<span class="tag last">${ic("zap")}Últimas</span>` : ""}
         ${inCartQty(p.id) ? `<span class="tag incart" data-incart="${p.id}">${ic("shopping-bag")}${inCartQty(p.id)}</span>` : ""}
         ${!available(p) ? '<span class="tag out">Agotado</span>' : ""}
       </div>
@@ -676,7 +672,7 @@ function card(p) {
       <div class="name" data-action="detail" data-id="${p.id}">${esc(p.nombre)}</div>
       <div class="prices"><span class="price">${money(fp)}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}</div>
       ${available(p)
-        ? `<span class="stock ${low ? "low" : ""}">${ic(low ? "alert-circle" : "circle-check")}${low ? "Poco stock" : "En stock"}</span>
+        ? `<span class="stock">${ic("circle-check")}En stock</span>
       <div class="buy-row"><button class="btn btn-dark btn-block add-btn" data-action="add" data-id="${p.id}">${ic("shopping-bag")}Agregar</button></div>`
         : `<div class="buy-row"><button class="btn btn-outline btn-block add-btn" data-action="notify" data-id="${p.id}">${ic("bell")}Avísame</button></div>`}
     </div>
@@ -953,7 +949,7 @@ function showDetail(id) {
   modal(`${modalHead(esc(p.nombre), esc(titleCase(p.cat)))}
     <div class="thumb detail-thumb">${icon(p)}<div class="tags">${p.oferta ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}</div></div>
     <div class="prices"><span class="price" style="font-size:28px">${money(finalPrice(p))}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}</div>
-    <span class="stock ${p.stock <= 2 ? "low" : ""}" style="margin-top:6px">${ic(p.stock > 0 ? (lowStock(p) ? "alert-circle" : "package-check") : "package-x")}${p.stock > 0 ? (lowStock(p) ? "Poco stock" : "En stock") : "Agotado por ahora"}</span>
+    <span class="stock ${p.stock > 0 ? "" : "low"}" style="margin-top:6px">${ic(p.stock > 0 ? "package-check" : "package-x")}${p.stock > 0 ? "En stock" : "Agotado por ahora"}</span>
     ${p.descripcion ? `<p style="color:var(--ink-2);font-size:14px;line-height:1.55;white-space:pre-line">${esc(p.descripcion)}</p>` : ""}
     <div class="perks-list"><div>${ic("shield-check")}Garantía</div>${deliveryOn() ? `<div>${ic("truck")}Delivery</div>` : `<div>${ic("store")}Retiro en tienda</div>`}<div>${ic("badge-dollar-sign")}Igualamos precio</div></div>
     ${available(p) ? `<div class="detail-buy">
