@@ -230,7 +230,10 @@
   .mini .ph::after, .mini .ph-arrow, .mini .ph-screen { animation: none; }
   .fly .ph { width: 100%; border-radius: 0; box-shadow: none; animation: none; }
   .card.is-out .ph, .card.is-out .ph::after, .card.is-out .ph-arrow, .card.is-out .ph-screen { animation: none; }
-  .thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease); }
+  .card:hover .thumb img { transform: scale(1.04); }
+  .detail-thumb img { object-fit: contain; }
+  .card:hover .detail-thumb img { transform: none; }
   .tags { position: absolute; top: 8px; left: 8px; right: 8px; display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none; }
   .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; border-radius: 999px; padding: 4px 8px; }
   .tag .lucide { width: 12px; height: 12px; }
