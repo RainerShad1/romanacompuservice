@@ -3,7 +3,7 @@
 Tienda web de computadoras, repuestos y servicio técnico en La Romana, República Dominicana.
 
 - Tienda: https://romanacompuservice-tienda.vercel.app/
-- Panel: https://romanacompuservice-tienda.vercel.app/admin.html
+- Panel: https://romanacompuservice-tienda.vercel.app/admin
 
 Publicada en Vercel desde este repositorio (Root Directory: `tienda`): cada push a `main` se publica solo.
 

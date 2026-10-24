@@ -558,7 +558,7 @@
 <script>
 /* ======================================================
    DATOS — el catálogo vive en Supabase y se edita en vivo
-   desde admin.html (productos, categorías y configuración).
+   desde el panel /admin (productos, categorías y configuración).
    ====================================================== */
 let CONFIG = {}, ICONS = {}, PRODUCTS = [], categories = [];
 // Delivery y métodos de pago: se activan o desactivan desde Configuración del panel
@@ -785,7 +785,7 @@ function renderFooter() {
         <li><button data-action="list" data-val="offers">${ic("zap")}Ofertas del día</button></li>
         <li><button data-action="list" data-val="new">${ic("package-open")}Recién llegados</button></li>
         <li><button data-action="account">${ic("user-round")}Mi cuenta</button></li>
-        <li><a href="privacidad.html">${ic("shield-check")}Aviso de privacidad</a></li>
+        <li><a href="privacidad">${ic("shield-check")}Aviso de privacidad</a></li>
       </ul></div>
     </div>
     <div class="copy">© ${new Date().getFullYear()} ${esc(CONFIG.marca)}. Todos los derechos reservados.</div>`;
@@ -1029,7 +1029,7 @@ function showAccount(next, mode = "login") {
         <label class="field">Contraseña<span class="input">${ic("lock")}<input name="password" type="password" required minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></span></label>
         ${locationFields()}
         ${remember}
-        <label class="check-row"><input type="checkbox" name="acepto">Acepto el&nbsp;<a href="privacidad.html" target="_blank" rel="noopener" style="text-decoration:underline">aviso de privacidad</a></label>
+        <label class="check-row"><input type="checkbox" name="acepto">Acepto el&nbsp;<a href="privacidad" target="_blank" rel="noopener" style="text-decoration:underline">aviso de privacidad</a></label>
         ${formError()}
         <button class="btn btn-yellow btn-lg btn-block">Crear mi cuenta${ic("arrow-right")}</button>
         <div class="note">${ic("shield-check")}Validamos que la cédula sea correcta. Tus datos solo los ve ${esc(CONFIG.marca)}.</div>
