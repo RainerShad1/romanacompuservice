@@ -230,8 +230,8 @@
   .mini .ph::after, .mini .ph-arrow, .mini .ph-screen { animation: none; }
   .fly .ph { width: 100%; border-radius: 0; box-shadow: none; animation: none; }
   .card.is-out .ph, .card.is-out .ph::after, .card.is-out .ph-arrow, .card.is-out .ph-screen { animation: none; }
-  /* Foto completa (sin recortes) sobre un fondo de la misma foto desenfocada que llena el cuadro */
-  .thumb img.pic { position: relative; width: 100%; height: 100%; object-fit: contain; transition: transform .4s var(--ease); }
+  /* Foto completa sobre la misma foto desenfocada que llena el cuadro; ambas fijas a los bordes para que Safari (iPhone) no las recorte */
+  .thumb img.pic { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transition: transform .4s var(--ease); }
   .thumb img.pic-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(16px) saturate(1.15); transform: scale(1.2); opacity: .85; }
   .card:hover .thumb img.pic { transform: scale(1.04); }
   .tags { z-index: 2; position: absolute; top: 8px; left: 8px; right: 8px; display: flex; gap: 6px; flex-wrap: wrap; pointer-events: none; }
@@ -334,7 +334,7 @@
   .modal-head h3 { margin: 0; font-size: 20px; letter-spacing: -.3px; }
   .modal-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
   .detail-thumb { aspect-ratio: 16/10; margin-bottom: 14px; }
-  .detail-thumb.has-img { aspect-ratio: 4/3; max-height: 62vh; cursor: zoom-in; }
+  .detail-thumb.has-img { aspect-ratio: 1/1; max-height: 62vh; cursor: zoom-in; }
   .zoom-btn { position: absolute; z-index: 2; right: 10px; bottom: 10px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(10,10,10,.72); color: #fff; backdrop-filter: blur(6px); box-shadow: 0 4px 14px -4px rgba(0,0,0,.5); }
   .zoom-btn .lucide { width: 19px; height: 19px; }
   /* Visor de foto en pantalla completa */
