@@ -556,7 +556,7 @@
     .tag { font-size: 10px; padding: 3px 7px; }
 
     /* Encabezado: más bajo y se esconde al bajar (ver ajustarEncabezado) */
-    header { transition: transform .3s var(--ease), background-color .3s ease, border-color .3s ease; will-change: transform; }
+    header { transition: transform .45s var(--ease), background-color .3s ease, border-color .3s ease; will-change: transform; }
     header.oculto { transform: translateY(-100%); }
     .announce { font-size: 12px; }
     .announce .wrap { padding-top: 6px; padding-bottom: 6px; gap: 16px; }
@@ -1648,16 +1648,15 @@ function toggleTheme() {
 darkMQ.addEventListener?.("change", paintThemeBtn);
 
 /* ======================================================
-   Celular: el encabezado se esconde al bajar y vuelve al subir
+   Celular: el encabezado se esconde después de bajar un buen tramo
+   y solo vuelve al llegar arriba del todo
    ====================================================== */
 const enCelular = window.matchMedia("(max-width: 640px)");
-let ultimoY = window.scrollY;
 function ajustarEncabezado() {
-  const h = $("header"), y = Math.max(0, window.scrollY), dy = y - ultimoY;
-  const fijo = !enCelular.matches || y < 120 || document.activeElement === $("#searchInput") || $("#overlay").classList.contains("open");
-  if (fijo || dy < -6) h.classList.remove("oculto");
-  else if (dy > 8) h.classList.add("oculto");
-  if (Math.abs(dy) > 6 || fijo) ultimoY = y;
+  const h = $("header"), y = Math.max(0, window.scrollY);
+  const fijo = !enCelular.matches || document.activeElement === $("#searchInput") || $("#overlay").classList.contains("open");
+  if (fijo || y < 80) h.classList.remove("oculto");
+  else if (y > 420) h.classList.add("oculto");
 }
 window.addEventListener("scroll", ajustarEncabezado, { passive: true });
 enCelular.addEventListener?.("change", ajustarEncabezado);
