@@ -990,6 +990,9 @@ function closeViewer() { $("#viewer")?.remove(); }
 
 function showDetail(id) {
   const p = byId(id); markViewed(id);
+  // Al abrir otro producto (p. ej. desde "También te puede interesar") la ficha empieza arriba
+  const otro = !$("#modal").classList.contains("open") || state.detailId !== id;
+  state.detailId = id;
   const q = state.qty[id] || 1;
   const similar = PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4);
   const fi = ficha(p);
@@ -1008,6 +1011,7 @@ function showDetail(id) {
       : `<button class="btn btn-outline btn-block" data-action="notify" data-id="${p.id}">${ic("bell")}Avísame cuando llegue</button>`}
     <button class="match btn-block" style="margin-top:6px" data-action="match" data-id="${p.id}">${ic("badge-dollar-sign")}¿Lo viste más barato? Igualamos precio</button>
     ${similar.length ? `<div class="similar"><h4>También te puede interesar</h4>${similar.map((s) => `<div class="line" data-action="detail" data-id="${s.id}"><div class="mini">${icon(s)}</div><div class="t">${esc(titulo(s))}</div><strong>${money(finalPrice(s))}</strong></div>`).join("")}</div>` : ""}`);
+  if (otro) $("#modal").scrollTop = 0;
 }
 
 /* ======================================================
