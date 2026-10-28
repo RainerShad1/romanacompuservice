@@ -542,7 +542,7 @@ function openProduct(id) {
           <div style="font-size:12px;color:var(--muted);margin-top:6px">La foto se reduce automáticamente para que la tienda cargue rápido.</div></div>
       </div>
       <div class="form-grid">
-        <label class="field full">Nombre<input name="nombre" required maxlength="200" value="${esc(p.nombre)}" placeholder="Ej: Laptop HP 15 Core i5 8GB 512GB SSD"></label>
+        <label class="field full">Nombre y especificaciones<small>La tienda muestra un título corto y ordena el resto en una ficha (Procesador: …, RAM: …)</small><textarea name="nombre" required maxlength="600" rows="3" placeholder="Ej: Laptop Dell Latitude 3310 ✅Procesador: Core i5 ✅RAM: 8GB ✅Almacenamiento: 256GB SSD">${esc(p.nombre)}</textarea></label>
         <label class="field">Categoría<select name="cat">${catNames().map((c) => `<option ${p.cat === c ? "selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
         <label class="field">Precio (${esc(db.config.moneda || "RD$")})<input name="precio" type="number" min="0" step="5" required value="${p.precio}"></label>
         <label class="field">Existencia<small>0 = agotado</small><input name="stock" type="number" min="0" step="1" required value="${p.stock}"></label>
