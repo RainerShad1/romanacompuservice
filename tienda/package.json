@@ -1,0 +1,8 @@
+{
+  "name": "romana-compuservice-tienda",
+  "private": true,
+  "description": "Solo para la función que genera la foto JPG de la vista previa (api/og.js); la tienda no necesita compilarse.",
+  "dependencies": {
+    "sharp": "0.33.5"
+  }
+}

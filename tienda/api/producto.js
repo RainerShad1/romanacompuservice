@@ -39,9 +39,11 @@ module.exports = async (req, res) => {
     set(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="${esc(desc)}">`);
     set(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${esc(pagina)}">`);
     if (p.img) {
-      set(/<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${esc(p.img)}">`);
-      set(/<meta name="twitter:image" content="[^"]*">/, `<meta name="twitter:image" content="${esc(p.img)}">`);
-      set(/<meta property="og:image:width"[^>]*>\s*<meta property="og:image:height"[^>]*>\s*/, "");
+      // JPG 1200×630 hecho por api/og.js (WhatsApp no muestra WebP); v cambia cuando cambia la foto
+      const v = encodeURIComponent(p.img.split("/").pop().replace(/\.\w+$/, ""));
+      const img = `${base}/api/og?id=${p.id}&v=${v}`;
+      set(/<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${esc(img)}">\n<meta property="og:image:type" content="image/jpeg">`);
+      set(/<meta name="twitter:image" content="[^"]*">/, `<meta name="twitter:image" content="${esc(img)}">`);
       set(/<meta property="og:image:alt" content="[^"]*">/, `<meta property="og:image:alt" content="${esc(f.titulo)}">`);
     }
     res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=86400");
