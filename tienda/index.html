@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<base href="/">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Romana CompuService</title>
 <meta name="description" content="Romana CompuService: computadoras, repuestos, accesorios y servicio técnico en La Romana">
@@ -274,6 +275,8 @@
   .card .body { padding: 2px 4px 0; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   .cat { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
   .name { font-weight: 700; font-size: 14px; line-height: 1.35; cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 38px; }
+  .share-btn { margin-left: auto; align-self: center; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-weight: 700; font-size: 13px; cursor: pointer; }
+  .share-btn .lucide { width: 16px; height: 16px; }
   .specs-mini { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: -2px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .specs { margin: 14px 0 4px; display: grid; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .specs > div { display: grid; grid-template-columns: minmax(96px, 36%) 1fr; gap: 10px; padding: 9px 12px; font-size: 13.5px; }
@@ -641,6 +644,17 @@ const logoPh = (id) => `<span class="ph" style="--d:${-((id || 0) % 6) * 0.45}s"
 // Título corto y ficha técnica sacados del nombre largo (ver ficha.js)
 const ficha = (p) => Ficha.de(p.nombre, p.cat);
 const titulo = (p) => ficha(p).titulo;
+// Enlace propio de cada producto: /p/35-laptop-dell-latitude-3310
+const slug = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
+const rutaProducto = (p) => `/p/${p.id}-${slug(titulo(p))}`;
+const urlProducto = (p) => location.origin + rutaProducto(p);
+const idEnUrl = () => { const m = location.pathname.match(/^\/p\/(\d+)/) || location.search.match(/[?&]p=(\d+)/); return m ? Number(m[1]) : null; };
+const tituloTienda = () => (CONFIG.marca || "Romana CompuService") + " - Tienda";
+function salirDeProducto() {
+  if (!idEnUrl()) return;
+  history.pushState({}, "", "/");
+  document.title = tituloTienda();
+}
 const icon = (p) => p.img ? `<img class="pic-bg" src="${esc(p.img)}" alt="" aria-hidden="true"><img class="pic" src="${esc(p.img)}" alt="">` : logoPh(p.id);
 const waLink = (text) => `https://wa.me/${CONFIG.whatsapp}${text ? "?text=" + encodeURIComponent(text) : ""}`;
 const igLink = () => `https://www.instagram.com/${CONFIG.instagram}/`;
@@ -772,7 +786,7 @@ function renderCatalog() {
   let items = state.list ? lists[state.list].f() : [...PRODUCTS];
   if (state.cat) items = items.filter((p) => p.cat === state.cat);
   if (state.q) {
-    const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const terms = norm(state.q).split(/\s+/).filter(Boolean);
     items = items.filter((p) => terms.every((t) => norm(p.nombre + " " + p.cat).includes(t)));
   }
@@ -821,7 +835,7 @@ function renderFooter() {
 }
 
 function render() {
-  document.title = CONFIG.marca + " - Tienda";
+  if (!idEnUrl()) document.title = tituloTienda();
   $("#announce").innerHTML = `${deliveryOn() ? `<span>${ic("truck")}Delivery en La Romana</span>` : `<span>${ic("store")}Pide en línea y retira en tienda</span>`}<span>${ic("shield-check")}Garantía en todos los productos</span><span>${ic("badge-percent")}Ofertas hasta ${CONFIG.descuento}% OFF</span><span>${ic("message-circle")}${esc(CONFIG.telefono)}</span>`;
   $("#catsNav").innerHTML = `<button class="chip ${state.view === "catalog" && !state.cat && !state.list && !state.q ? "active" : ""}" data-action="catalog">${ic("layout-grid")}Todos</button>` +
     categories.map((c) => `<button class="chip ${state.cat === c ? "active" : ""}" data-action="cat" data-val="${esc(c)}">${ic(ICONS[c] || "package")}${esc(titleCase(c))}</button>`).join("");
@@ -993,12 +1007,14 @@ function showDetail(id) {
   // Al abrir otro producto (p. ej. desde "También te puede interesar") la ficha empieza arriba
   const otro = !$("#modal").classList.contains("open") || state.detailId !== id;
   state.detailId = id;
+  if (idEnUrl() !== id) history.pushState({ p: id }, "", rutaProducto(p));
+  document.title = `${titulo(p)} · ${CONFIG.marca || "Romana CompuService"}`;
   const q = state.qty[id] || 1;
   const similar = PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4);
   const fi = ficha(p);
   modal(`${modalHead(esc(fi.titulo), esc(titleCase(p.cat)))}
     <div class="thumb detail-thumb${p.img ? " has-img" : ""}" ${p.img ? `data-action="viewer" data-id="${p.id}"` : ""}>${icon(p)}${p.img ? `<button type="button" class="zoom-btn" data-action="viewer" data-id="${p.id}" aria-label="Ver foto en pantalla completa" title="Pantalla completa">${ic("maximize-2")}</button>` : ""}<div class="tags">${p.oferta ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}${fi.condicion ? `<span class="tag cond">${esc(fi.condicion)}</span>` : ""}</div></div>
-    <div class="prices"><span class="price" style="font-size:28px">${money(finalPrice(p))}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}</div>
+    <div class="prices"><span class="price" style="font-size:28px">${money(finalPrice(p))}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}<button type="button" class="share-btn" data-action="share" data-id="${p.id}">${ic("share-2")}Compartir</button></div>
     <span class="stock ${p.stock > 0 ? "" : "low"}" style="margin-top:6px">${ic(p.stock > 0 ? "package-check" : "package-x")}${p.stock > 0 ? "En stock" : "Agotado por ahora"}</span>
     ${fi.specs.length ? `<dl class="specs">${fi.specs.filter(([k]) => k !== "Condición").map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
     ${p.descripcion ? `<p style="color:var(--ink-2);font-size:14px;line-height:1.55;white-space:pre-line">${esc(p.descripcion)}</p>` : ""}
@@ -1434,7 +1450,8 @@ document.addEventListener("click", (e) => {
     case "edit-profile": showEditProfile(); break;
     case "gps": useGps(el); break;
     case "forgot": wa(`Hola, olvidé la contraseña de mi cuenta en la tienda. Mi cédula es: `); break;
-    case "close": closeAll(); state.openOrder = null; break;
+    case "close": closeAll(); state.openOrder = null; salirDeProducto(); break;
+    case "share": compartir(p); break;
     case "match": wa(`Hola, vi más barato el producto "${titulo(p)}" (${money(finalPrice(p))} en su tienda). ¿Me igualan el precio?`); break;
     case "notify": wa(`Hola, avísenme cuando llegue: "${titulo(p)}".`); break;
     case "whatsapp": wa(`Hola ${CONFIG.marca}, tengo una consulta.`); break;
@@ -1467,7 +1484,21 @@ document.addEventListener("input", (e) => {
   const p = Math.max(0, pos + el.value.length - before); el.setSelectionRange(p, p);
   updateCedulaHint(el);
 });
-document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if ($("#viewer")) return closeViewer(); closeAll(); });
+document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if ($("#viewer")) return closeViewer(); closeAll(); salirDeProducto(); });
+// Atrás / adelante del navegador: abre o cierra el producto de la dirección
+window.addEventListener("popstate", () => {
+  closeViewer();
+  const id = idEnUrl();
+  if (id && byId(id)) showDetail(id);
+  else { if ($("#modal").classList.contains("open") && $("#modal .detail-thumb")) closeAll(); document.title = tituloTienda(); }
+});
+async function compartir(p) {
+  const url = urlProducto(p), title = titulo(p);
+  const text = `${title} · ${money(finalPrice(p))} en ${CONFIG.marca || "Romana CompuService"}`;
+  if (navigator.share) { try { await navigator.share({ title, text, url }); } catch {} return; }
+  try { await navigator.clipboard.writeText(url); toast("Enlace copiado. Pégalo donde quieras", "link"); }
+  catch { prompt("Copia el enlace del producto:", url); }
+}
 
 async function init() {
   $("#app").innerHTML = `<div class="empty" style="margin-top:40px">${ic("loader-circle")}Cargando catálogo…</div>`; refreshIcons();
@@ -1479,6 +1510,9 @@ async function init() {
     refreshIcons(); return;
   }
   render(); loadUser(); subscribeCatalog();
+  const id = idEnUrl();
+  if (id && byId(id)) showDetail(id);
+  else if (id) { history.replaceState({}, "", "/"); toast("Ese producto ya no está disponible", "package-x"); }
 }
 /* ======================================================
    Modo noche (se recuerda en el dispositivo)
