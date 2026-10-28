@@ -334,6 +334,18 @@
   .modal-head h3 { margin: 0; font-size: 20px; letter-spacing: -.3px; }
   .modal-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
   .detail-thumb { aspect-ratio: 16/10; margin-bottom: 14px; }
+  .detail-thumb.has-img { aspect-ratio: 4/3; max-height: 62vh; cursor: zoom-in; }
+  .zoom-btn { position: absolute; z-index: 2; right: 10px; bottom: 10px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(10,10,10,.72); color: #fff; backdrop-filter: blur(6px); box-shadow: 0 4px 14px -4px rgba(0,0,0,.5); }
+  .zoom-btn .lucide { width: 19px; height: 19px; }
+  /* Visor de foto en pantalla completa */
+  .viewer { position: fixed; inset: 0; z-index: 120; background: #000; display: grid; place-items: center; overflow: auto; animation: viewerIn .2s ease both; touch-action: pinch-zoom pan-x pan-y; }
+  .viewer img { max-width: 100vw; max-height: 100vh; width: auto; height: auto; object-fit: contain; cursor: zoom-in; user-select: none; }
+  .viewer.zoomed { place-items: start; }
+  .viewer.zoomed img { max-width: none; max-height: none; width: 200vw; cursor: zoom-out; }
+  .viewer-x { position: fixed; z-index: 121; top: max(14px, env(safe-area-inset-top)); right: 14px; width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; display: grid; place-items: center; }
+  .viewer-x .lucide { width: 24px; height: 24px; }
+  .viewer-hint { position: fixed; z-index: 121; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.75); font-size: 13px; background: rgba(255,255,255,.1); padding: 6px 12px; border-radius: 999px; white-space: nowrap; pointer-events: none; }
+  @keyframes viewerIn { from { opacity: 0; } to { opacity: 1; } }
   .detail-thumb .lucide { width: 30%; height: 30%; }
   .perks-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
   .perks-list div { background: var(--surface-2); border-radius: 12px; padding: 10px; font-size: 12px; font-weight: 600; display: grid; justify-items: center; gap: 4px; text-align: center; }
@@ -947,12 +959,29 @@ function markViewed(id) {
   save();
 }
 
+/* Foto del producto en pantalla completa: toca para acercar, la X o Esc para salir */
+function openViewer(p) {
+  if (!p?.img) return;
+  closeViewer();
+  const v = document.createElement("div");
+  v.className = "viewer"; v.id = "viewer";
+  v.setAttribute("role", "dialog"); v.setAttribute("aria-label", "Foto de " + p.nombre);
+  v.innerHTML = `<img src="${esc(p.img)}" alt="${esc(p.nombre)}"><button type="button" class="viewer-x" aria-label="Cerrar">${ic("x")}</button><div class="viewer-hint">Toca la foto para acercar</div>`;
+  v.addEventListener("click", (e) => {
+    if (e.target.tagName === "IMG") { v.classList.toggle("zoomed"); v.querySelector(".viewer-hint")?.remove(); return; }
+    closeViewer();
+  });
+  document.body.appendChild(v);
+  refreshIcons();
+}
+function closeViewer() { $("#viewer")?.remove(); }
+
 function showDetail(id) {
   const p = byId(id); markViewed(id);
   const q = state.qty[id] || 1;
   const similar = PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4);
   modal(`${modalHead(esc(p.nombre), esc(titleCase(p.cat)))}
-    <div class="thumb detail-thumb">${icon(p)}<div class="tags">${p.oferta ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}</div></div>
+    <div class="thumb detail-thumb${p.img ? " has-img" : ""}" ${p.img ? `data-action="viewer" data-id="${p.id}"` : ""}>${icon(p)}${p.img ? `<button type="button" class="zoom-btn" data-action="viewer" data-id="${p.id}" aria-label="Ver foto en pantalla completa" title="Pantalla completa">${ic("maximize-2")}</button>` : ""}<div class="tags">${p.oferta ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}</div></div>
     <div class="prices"><span class="price" style="font-size:28px">${money(finalPrice(p))}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}</div>
     <span class="stock ${p.stock > 0 ? "" : "low"}" style="margin-top:6px">${ic(p.stock > 0 ? "package-check" : "package-x")}${p.stock > 0 ? "En stock" : "Agotado por ahora"}</span>
     ${p.descripcion ? `<p style="color:var(--ink-2);font-size:14px;line-height:1.55;white-space:pre-line">${esc(p.descripcion)}</p>` : ""}
@@ -1360,6 +1389,7 @@ document.addEventListener("click", (e) => {
     case "add": if (addToCart(id, state.qty[id] || 1, el)) { state.qty[id] = 1; closeAll(); } break;
     case "buy": if (addToCart(id, state.qty[id] || 1) || state.cart.some((l) => l.id === id)) showCheckout(); break;
     case "detail": showDetail(id); break;
+    case "viewer": openViewer(byId(id)); break;
     case "cart": openPanel($("#cartDrawer")); break;
     case "cart+": case "cart-": {
       const up = el.dataset.action === "cart+", r = el.getBoundingClientRect();
@@ -1419,7 +1449,7 @@ document.addEventListener("input", (e) => {
   const p = Math.max(0, pos + el.value.length - before); el.setSelectionRange(p, p);
   updateCedulaHint(el);
 });
-document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if ($("#viewer")) return closeViewer(); closeAll(); });
 
 async function init() {
   $("#app").innerHTML = `<div class="empty" style="margin-top:40px">${ic("loader-circle")}Cargando catálogo…</div>`; refreshIcons();
