@@ -27,7 +27,7 @@ const Ficha = (() => {
     "velocidad": "Velocidad", "voltaje": "Voltaje", "potencia": "Potencia", "tamano": "Tamaño", "conexion": "Conexión",
   };
   const ORDEN = ["Marca", "Modelo", "Condición", "Procesador", "Memoria RAM", "Almacenamiento", "Pantalla", "Gráficos",
-    "Sistema", "Conectividad", "Puertos", "Batería", "Capacidad", "Velocidad", "Compatible con", "Color", "Incluye", "Detalles"];
+    "Sistema", "Conectividad", "Puertos", "Batería", "Capacidad", "Velocidad", "Compatible con", "Color", "Garantía", "Incluye", "Detalles"];
   const PALABRAS_ETIQUETA = "procesador|memoria ram|ram|almacenamiento|pantalla|gr[aá]ficos|conectividad|sistema operativo|sistema|bater[ií]a|color|puertos|c[aá]mara|capacidad|compatible|modelo|marca|garant[ií]a|condici[oó]n";
 
   const sinTildes = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -36,11 +36,11 @@ const Ficha = (() => {
   const capital = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
 
   // Texto en MAYÚSCULAS → "Laptop Victus 15-FA2013"; deja siglas y modelos como están
-  const SIGLAS = /^(HP|MSI|LG|RTX|GTX|SSD|HDD|FHD|HD|UHD|OLED|IPS|USB|HDMI|LAN|DDR\d?|AMD|RAM|TB|GB|PC|TV|WIFI|BT|SD|NVME|M\.2|II|III|IV)$/;
+  const SIGLAS = /^(HP|MSI|LG|RTX|GTX|SSD|HDD|FHD|HD|UHD|OLED|IPS|USB|HDMI|LAN|DDR\d?|AMD|RAM|TB|GB|PC|TV|WIFI|BT|SD|NVME|UFS|EMMC|M\.2|II|III|IV)$/;
   function casoNatural(s) {
     const letras = s.replace(/[^A-Za-zÁÉÍÓÚÑáéíóúñ]/g, "");
     if (!letras || letras.replace(/[^A-ZÁÉÍÓÚÑ]/g, "").length / letras.length < 0.7) return s;
-    return s.split(" ").map((w) => (/\d/.test(w) || SIGLAS.test(w) ? w : capital(w.toLowerCase()))).join(" ");
+    return s.split(" ").map((w) => (/\d/.test(w) || SIGLAS.test(w) ? w : /^(de|y|con)$/i.test(w) ? w.toLowerCase() : capital(w.toLowerCase()))).join(" ");
   }
 
   function marcaDe(texto) {
@@ -51,15 +51,17 @@ const Ficha = (() => {
 
   // Adivina a qué especificación pertenece un trozo sin etiqueta
   function adivinar(t) {
+    if (/garant[ií]a/i.test(t)) return "Garantía";
+    if (/touch bar/i.test(t)) return "Detalles";
     if (/\b(windows|win)\b|mac ?os|chrome ?os/i.test(t)) return "Sistema";
-    if (/\b(rtx|gtx|radeon|geforce|nvidia|uhd graphics|iris|vega)\b/i.test(t)) return "Gráficos";
+    if (/\b(rtx|gtx|radeon|geforce|nvidia|uhd|iris|vega)\b|gr[aá]ficos/i.test(t)) return "Gráficos";
     if (/\b(core ?i[3579]|i[3579][- ]?\d{3,5}[a-z]*|ryzen|celeron|pentium|athlon|snapdragon|m[1-4]( pro| max)?)\b|\bintel\b|\bamd\b/i.test(t)) return "Procesador";
-    if (/\d+\s?(gb|tb)\b.*\b(ssd|hdd|emmc|nvme|m\.2)\b|\b(ssd|hdd|nvme)\b.*\d+\s?(gb|tb)/i.test(t)) return "Almacenamiento";
+    if (/\d+\s?(gb|tb)\b.*\b(ssd|hdd|emmc|nvme|ufs|m\.2)\b|\b(ssd|hdd|nvme|ufs)\b.*\d+\s?(gb|tb)/i.test(t)) return "Almacenamiento";
     if (/\d+\s?gb\b.*\b(ram|ddr\d?)\b|\bram\b/i.test(t)) return "Memoria RAM";
-    if (/\d{2}(\.\d)?\s?("|”|''|pulg)|\b(fhd|full hd|touch|t[aá]ctil|\d{2,3}\s?hz)\b|pantalla/i.test(t)) return "Pantalla";
+    if (/\d{2}(\.\d)?\s?("|”|″|''|pulg)|\b(fhd|full hd|touch|t[aá]ctil|\d{2,3}\s?hz)\b|pantalla/i.test(t)) return "Pantalla";
     if (/wi-?fi|bluetooth|\bbt\s?\d/i.test(t)) return "Conectividad";
     if (/\b(usb|hdmi|lan|ethernet|thunderbolt|type-?c)\b|lector|puerto/i.test(t)) return "Puertos";
-    if (/gratis|regalo|incluye|obsequio/i.test(t)) return "Incluye";
+    if (/gratis|regalo|regalamos|incluye|incluid[oa]|obsequio/i.test(t)) return "Incluye";
     if (/bater[ií]a|mah\b/i.test(t)) return "Batería";
     return "Detalles";
   }
@@ -74,6 +76,8 @@ const Ficha = (() => {
     if (clave === "Almacenamiento") v = v.replace(/(\d\s?(?:gb|tb))\s+de\s+/i, "$1 ");
     if (clave === "Pantalla" && /^\d{2}(\.\d)?$/.test(v)) v += '"';
     if (clave === "Pantalla") v = v.replace(/\bpantalla\b\s*/gi, "").trim();
+    if (clave === "Garantía") { const g = /(\d+)\s*(mes|a[nñ]o|d[ií]a)/i.exec(v); if (g) v = `${g[1]} ${g[2].toLowerCase()}${g[1] === "1" ? "" : g[2].toLowerCase() === "mes" ? "es" : "s"}`; }
+    if (clave === "Modelo") v = v.replace(/\s*\/\s*/g, " ");
     if (clave === "Sistema") v = v.replace(/^win$/i, "Windows");
     if (clave === "Memoria RAM") v = v.replace(/\s*\bde ram\b/i, " RAM").replace(/\s+/g, " ");
     return casoNatural(v);
@@ -86,9 +90,9 @@ const Ficha = (() => {
     const raw = String(nombre || "");
 
     // 1. Trozos: separados por ✅ / • / saltos; si no hay, por comas o espacios dobles
-    let partes = raw.split(/[✅✔☑•|\n]+/u).map((s) => s.trim()).filter((s) => limpiar(s));
+    let partes = raw.split(/[✅✔☑•·|\n]+/u).map((s) => s.trim()).filter((s) => limpiar(s));
     if (partes.length <= 1) partes = raw.split(/,|\s{2,}/).map((s) => s.trim()).filter((s) => limpiar(s));
-    else partes = partes.flatMap((p, i) => (i === 0 ? [p] : p.split(/\s{3,}|💯/u)));
+    else partes = partes.flatMap((p, i) => (i === 0 ? [p] : p.split(/\s{3,}|💯/u))).flatMap((p, i) => (i === 0 || p.includes(":") ? [p] : p.split(",")));
     const separaEtiquetas = new RegExp(`(?<!memoria\\s*|sistema\\s*)(?=\\b(?:${PALABRAS_ETIQUETA})\\s*:)`, "i");
     partes = partes.flatMap((p) => p.split(separaEtiquetas)).map((s) => s.trim()).filter((s) => limpiar(s));
 
@@ -107,14 +111,18 @@ const Ficha = (() => {
 
     if (titulo) {
       titulo = titulo.replace(/\b(como nuev[oa]|reacondicionad[oa]|usad[oa](?: a\+)?|open box)\b/gi, " ");
-      const pant = titulo.match(/\d{2}(?:\.\d)?\s?(?:"|”|''|pulgadas?)(?:\s*(?:FHD|Full HD|HD|IPS|OLED|\d{2,3}\s?HZ))*/i);
+      const pant = titulo.match(/\d{2}(?:\.\d)?\s?(?:"|”|″|''|pulgadas?)(?:\s*(?:FHD|Full HD|HD|IPS|OLED|\d{2,3}\s?HZ))*/i);
       if (pant) { poner("Pantalla", pant[0]); titulo = titulo.replace(pant[0], " "); }
       titulo = casoNatural(limpiar(titulo.replace(/\s+-\s+/g, " ")));
     }
 
     // 4. Especificaciones
+    let enIncluye = false;
     for (let i = 0; i < partes.length; i++) {
       const p = partes[i];
+      const encabezado = limpiar(p).replace(/:$/, "").toLowerCase();
+      if (/^(especificaciones( t[eé]cnicas)?|caracter[ií]sticas|detalles)$/.test(encabezado)) continue;
+      if (encabezado === "incluye") { enIncluye = true; continue; }
       const m = limpiar(p).match(/^([^:]{2,28}):\s*(.*)$/);
       if (m) {
         const et = sinTildes(m[1].toLowerCase()).trim();
@@ -123,7 +131,8 @@ const Ficha = (() => {
         if (!limpiar(valor) && partes[i + 1] && !partes[i + 1].includes(":")) valor = partes[++i];
         poner(clave, valor);
       } else {
-        poner(adivinar(p), p);
+        const k = adivinar(p);
+        poner(enIncluye && k === "Detalles" ? "Incluye" : k, p);
       }
     }
 
@@ -141,16 +150,17 @@ const Ficha = (() => {
 
     const marca = specs.Marca || marcaDe(raw);
     if (marca) specs.Marca = marca;
-    if (condicion && !specs["Condición"]) specs["Condición"] = condicion;
+    if (specs["Condición"]) condicion = specs["Condición"];
+    else if (condicion) specs["Condición"] = condicion;
 
     // 5. Sin título: "Laptop" + marca + procesador
     if (!titulo) {
       const [w, ...rest] = String(cat).toLowerCase().split(" ");
       const singular = w ? capital(w.length > 5 && /es$/.test(w) ? w.slice(0, -2) : w.replace(/s$/, "")) + (rest.length ? " " + rest.join(" ") : "") : "Producto";
-      titulo = [singular, marca, specs.Procesador && specs.Procesador.split(" ").slice(0, 3).map(capital).join(" ")].filter(Boolean).join(" ");
+      titulo = [singular, marca, specs.Modelo || (specs.Procesador && specs.Procesador.split(" ").slice(0, 3).map(capital).join(" "))].filter(Boolean).join(" ");
     } else if (marca && new RegExp(`\\b${marca.split(" ")[0]}\\b`, "i").test(titulo)) {
       titulo = titulo.replace(new RegExp(`\\b${marca.split(" ")[0]}\\b`, "i"), marca.split(" ")[0]);
-    } else if (marca) {
+    } else if (marca && !MARCAS.some(([k, v]) => v === marca && new RegExp(`\\b${k}\\b`, "i").test(titulo))) {
       titulo = titulo.replace(/^(\S+)/, `$1 ${marca}`);
     }
 
@@ -159,13 +169,13 @@ const Ficha = (() => {
     // 6. Resumen corto para la tarjeta: procesador · RAM · disco
     const resumen = [];
     const pr = specs.Procesador || "";
-    const mp = pr.match(/\bi[3579][- ]?\d{4,5}[a-z]*\b/i) || pr.match(/\b(core )?i[3579]\b/i) || pr.match(/ryzen\s?\d(\s?pro)?|celeron|pentium|athlon|snapdragon|\bm[1-4]\b/i);
+    const mp = pr.match(/\bi[3579][- ]?\d{4,5}[a-z]*\b/i) || pr.match(/\b(core )?i[3579]\b/i) || pr.match(/ryzen\s?\d(\s?pro)?|celeron|pentium|athlon|snapdragon|\bm[1-4]\b|\bn\d{3}\b/i);
     if (mp) resumen.push(capital(mp[0].replace(/^core /i, "Core ")).replace(/^I([3579])/, "i$1").replace(/^(i[3579])$/, "Core $1"));
     const r = (specs["Memoria RAM"] || "").match(/\d+\s?gb/i); if (r) resumen.push(r[0].replace(/\s/, "").toUpperCase() + " RAM");
-    const d = (specs.Almacenamiento || "").match(/(\d+\s?(?:gb|tb))\s*(?:de\s+)?(ssd|hdd|emmc|nvme)?|(ssd|hdd)\s*(\d+\s?(?:gb|tb))/i);
-    if (d) resumen.push(((d[1] || d[4]) + " " + (d[2] || d[3] || "")).replace(/\s+/g, " ").trim().toUpperCase().replace(/(\d)\s(GB|TB)/, "$1$2"));
+    const al = specs.Almacenamiento || "", tam = al.match(/(\d+)\s?(gb|tb)/i), tipo = al.match(/\b(ssd|hdd|emmc|nvme|ufs)\b/i);
+    if (tam) resumen.push(`${tam[1]}${tam[2].toUpperCase()}${tipo ? " " + tipo[1].toUpperCase() : ""}`);
 
-    const out = { titulo: titulo || limpiar(raw), specs: lista, resumen, condicion };
+    const out = { titulo: titulo || limpiar(raw), specs: lista, resumen, condicion, garantia: specs["Garantía"] || "" };
     cache.set(llave, out);
     return out;
   }

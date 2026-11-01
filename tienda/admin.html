@@ -13,6 +13,8 @@
 <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <script src="cuentas.js"></script>
+<script src="ficha.js"></script>
+<script src="plantilla.js"></script>
 <style>
   :root {
     --bg: #f5f5f2; --surface: #fff; --surface-2: #f0f0ec; --ink: #0f0f0f; --ink-2: #3a3a3a; --muted: #75756f; --line: #e6e6e0;
@@ -82,7 +84,7 @@
 
   /* ---------- Product list ---------- */
   .list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; }
-  .prow { display: grid; grid-template-columns: 56px minmax(0, 1fr) 130px 90px 74px 74px 120px; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); }
+  .prow { display: grid; grid-template-columns: 56px minmax(0, 1fr) 130px 90px 74px 74px 162px; gap: 12px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); }
   .prow:first-child { border-top: 0; }
   .prow.labels { background: var(--surface-2); font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; padding-top: 9px; padding-bottom: 9px; }
   .prow.is-hidden > :not(.acts) { opacity: .5; }
@@ -108,6 +110,10 @@
   .switch input:checked + span { background: var(--black); }
   .switch input:checked + span::before { transform: translateX(18px); background: var(--yellow); }
   .acts { display: flex; gap: 6px; justify-content: flex-end; }
+  .promo-prev { display: grid; place-items: center; background: var(--surface-2); border-radius: 14px; padding: 12px; margin: 12px 0; min-height: 240px; }
+  .promo-prev canvas { display: block; max-width: 100%; max-height: 58vh; width: auto; height: auto; box-shadow: var(--shadow); }
+  .promo-note { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--warn); background: var(--warn-soft); padding: 10px 12px; border-radius: 12px; margin-bottom: 12px; }
+  .promo-foot { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
   .empty { padding: 40px 16px; text-align: center; color: var(--muted); display: grid; justify-items: center; gap: 10px; }
   .empty .lucide { width: 30px; height: 30px; }
 
@@ -287,7 +293,7 @@ function toast(msg, i = "circle-check") {
   clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 2600);
 }
 function openModal(html) { $("#modal").innerHTML = html; refreshIcons(); $("#overlay").classList.add("open"); $("#modal").classList.add("open"); }
-function closeModal() { $("#overlay").classList.remove("open"); $("#modal").classList.remove("open"); ui.editing = null; ui.photoBlob = null; }
+function closeModal() { $("#overlay").classList.remove("open"); $("#modal").classList.remove("open"); ui.editing = null; ui.photoBlob = null; promo = null; }
 function fail(error, msg = "No se pudo guardar") { console.error(error); toast(`${msg}: ${error.message || error}`, "alert-triangle"); }
 
 /* ======================================================
@@ -514,6 +520,7 @@ function productRow(p) {
       <div><div class="lbl-m">Visible</div><label class="switch" title="Visible en la tienda"><input type="checkbox" ${!p.oculto ? "checked" : ""} data-field="visible" data-id="${p.id}"><span></span></label></div>
     </div>
     <div class="acts">
+      <button class="icon-only" data-action="promo" data-id="${p.id}" title="Crear imagen para redes" aria-label="Crear imagen para redes">${ic("image-down")}</button>
       <button class="icon-only" data-action="edit" data-id="${p.id}" title="Editar">${ic("pencil")}</button>
       <button class="icon-only" data-action="dup" data-id="${p.id}" title="Duplicar">${ic("copy")}</button>
       <button class="icon-only del" data-action="del" data-id="${p.id}" title="Eliminar">${ic("trash-2")}</button>
@@ -525,6 +532,72 @@ async function patchProduct(id, patch, msg = "Guardado") {
   if (error) { render(); return fail(error); }
   db.productos = db.productos.map((p) => (p.id === id ? { ...data, precio: Number(data.precio) } : p));
   render(); toast(msg);
+}
+
+/* ---------- Imagen para redes (plantilla.js) ---------- */
+let promo = null;
+function datosPromo(p) {
+  const f = Ficha.de(p.nombre, p.cat), c = db.config;
+  const g = /(\d+)\s*mes(?:es)?\s*de\s*garant/i.exec(p.descripcion || "");
+  const garantia = f.garantia || (g ? `${g[1]} ${g[1] === "1" ? "mes" : "meses"}` : "");
+  return {
+    titulo: f.titulo, foto: p.img || "", etiqueta: f.condicion,
+    chips: [...f.resumen, ...(garantia ? [`${garantia} de garantía`] : [])],
+    precio: money(finalPrice(p)), precioAntes: p.oferta ? money(p.precio) : "", descuento: p.oferta ? `-${c.descuento || 0}%` : "",
+    marca: c.marca || "Romana CompuService", frase: c.frase || "", telefono: c.telefono || "", instagram: c.instagram || "",
+  };
+}
+function openPromo(id) {
+  const p = db.productos.find((x) => x.id === id);
+  promo = { p, formato: "post", blob: null };
+  openModal(`<div class="mhead"><h2>Imagen para redes</h2><button class="x" data-action="close" aria-label="Cerrar">${ic("x")}</button></div>
+    <div class="seg-tabs" id="promoTabs">
+      <button class="on" data-action="promo-fmt" data-val="post">Post cuadrado</button>
+      <button data-action="promo-fmt" data-val="historia">Historia</button>
+    </div>
+    <div class="promo-prev" id="promoPrev">${ic("loader-circle")}</div>
+    <div id="promoNote"></div>
+    <div class="promo-foot">
+      <button class="btn btn-outline" data-action="promo-share" id="promoShare" hidden>${ic("share-2")}Compartir</button>
+      <button class="btn btn-dark" data-action="promo-save" id="promoSave" disabled>${ic("download")}Descargar imagen</button>
+    </div>`);
+  pintarPromo();
+}
+async function pintarPromo() {
+  const actual = promo, { p, formato } = actual;
+  actual.blob = null;
+  $("#promoSave").disabled = true; $("#promoShare").hidden = true;
+  $("#promoPrev").innerHTML = ic("loader-circle"); refreshIcons();
+  try {
+    const { canvas, sinFoto } = await Plantilla.crear(datosPromo(p), formato);
+    if (promo !== actual || actual.formato !== formato) return; // ya eligió otro formato o cerró
+    const blob = await new Promise((ok) => canvas.toBlob(ok, "image/jpeg", .92));
+    if (promo !== actual || actual.formato !== formato) return;
+    actual.blob = blob;
+    $("#promoPrev").replaceChildren(canvas);
+    const avisos = [];
+    if (sinFoto) avisos.push("No se pudo leer la foto de este producto, por eso sale el logo. Súbela de nuevo con “Subir foto” al editarlo.");
+    else if (!p.img) avisos.push("Este producto no tiene foto, por eso sale el logo.");
+    if (p.stock <= 0) avisos.push("Este producto está agotado.");
+    if (p.oculto) avisos.push("Este producto está oculto en la tienda.");
+    $("#promoNote").innerHTML = avisos.map((a) => `<div class="promo-note">${ic("alert-triangle")}<span>${esc(a)}</span></div>`).join("");
+    refreshIcons();
+    $("#promoSave").disabled = false;
+    $("#promoShare").hidden = !(navigator.canShare && navigator.canShare({ files: [archivoPromo()] }));
+  } catch (e) {
+    console.error(e);
+    if (promo === actual) { $("#promoPrev").textContent = "No se pudo crear la imagen. Revisa tu conexión y vuelve a abrirla."; }
+  }
+}
+function archivoPromo() {
+  const nombre = Ficha.de(promo.p.nombre, promo.p.cat).titulo.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
+  return new File([promo.blob], `${nombre}-${promo.formato}.jpg`, { type: "image/jpeg" });
+}
+function descargarPromo() {
+  const f = archivoPromo(), a = document.createElement("a");
+  a.href = URL.createObjectURL(f); a.download = f.name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast("Imagen descargada", "download");
 }
 
 function openProduct(id) {
@@ -706,6 +779,13 @@ document.addEventListener("click", async (e) => {
     case "o-state": setOrderState(id, val); break;
     case "new": openProduct(null); break;
     case "edit": openProduct(id); break;
+    case "promo": openPromo(id); break;
+    case "promo-fmt":
+      promo.formato = el.dataset.val;
+      $("#promoTabs").querySelectorAll("button").forEach((b) => b.classList.toggle("on", b === el));
+      pintarPromo(); break;
+    case "promo-save": descargarPromo(); break;
+    case "promo-share": try { await navigator.share({ files: [archivoPromo()] }); } catch {} break;
     case "dup": {
       const src = db.productos.find((p) => p.id === id);
       const { id: _id, created_at, updated_at, ...rest } = src;
