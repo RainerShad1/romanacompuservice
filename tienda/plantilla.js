@@ -108,7 +108,7 @@ const Plantilla = (() => {
     ctx.beginPath(); ctx.moveTo(x + t * .25, y + t * .1); ctx.lineTo(x + t * .9, y + t * .1); ctx.lineTo(x + t * .9, y + t * .75); ctx.stroke();
   }
 
-  /* datos: { titulo, precio, precioAntes, descuento, chips[], etiqueta, foto, marca, frase, telefono, instagram, enlace }
+  /* datos: { titulo, precio, precioAntes, descuento, chips[], etiqueta, foto, marca, frase, telefono, instagram, enlace, nota }
      Devuelve { canvas, sinFoto } */
   async function crear(datos, formato = "post") {
     const F = FORMATOS[formato];
@@ -140,10 +140,12 @@ const Plantilla = (() => {
     const alto = y2 - y1;
 
     // Medidas del cuadro del precio
-    const hb = datos.precioAntes ? 158 : 132, corte = 14;
+    const extra = datos.nota ? 40 : 0;
+    const hb = (datos.precioAntes ? 158 : 132) + extra, corte = 14;
     let sp = 76; ctx.font = fuente(800, sp);
     while (ctx.measureText(datos.precio).width > 560 && sp > 44) { sp -= 2; ctx.font = fuente(800, sp); }
-    const wb = ctx.measureText(datos.precio).width + 148;
+    let wb = ctx.measureText(datos.precio).width + 148;
+    if (datos.nota) { ctx.font = fuente(700, 26); wb = Math.max(wb, ctx.measureText(datos.nota).width + 56); }
     const by = y2 - hb + sobra;
 
     // Cuadro grande: la foto
@@ -165,7 +167,7 @@ const Plantilla = (() => {
     // Cuadro pequeño en el corte: el precio
     ctx.fillStyle = AMARILLO; ctx.fillRect(M - corte, by - corte, wb + corte * 2, hb + corte);
     ctx.fillStyle = NEGRO; ctx.fillRect(M, by, wb, hb);
-    flecha(ctx, M + 28, by + hb - 96, 62, AMARILLO);
+    flecha(ctx, M + 28, by + hb - extra - 96, 62, AMARILLO);
     if (datos.precioAntes) {
       ctx.font = fuente(600, 30); ctx.fillStyle = "#cfcfc6";
       const ax = M + 116, ay = by + 44;
@@ -174,7 +176,11 @@ const Plantilla = (() => {
       ctx.fillRect(ax - 2, ay - 11, aw + 4, 3);
     }
     ctx.font = fuente(800, sp); ctx.fillStyle = AMARILLO;
-    ctx.fillText(datos.precio, M + 116, by + hb - 34);
+    ctx.fillText(datos.precio, M + 116, by + hb - extra - 34);
+    if (datos.nota) {
+      ctx.font = fuente(700, 26); ctx.fillStyle = BLANCO;
+      ctx.fillText(datos.nota, M + 28, by + hb - 24);
+    }
 
     // Título
     ctx.font = fuente(800, s); ctx.fillStyle = NEGRO;
