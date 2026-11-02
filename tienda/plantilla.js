@@ -11,8 +11,8 @@ const Plantilla = (() => {
 
   // Medidas de cada formato. En la historia, arriba y abajo quedan libres para los botones de Instagram.
   const FORMATOS = {
-    post: { w: 1080, h: 1080, cab: 44, marco: 156, titulo: { size: 54, min: 40, lineas: 2 }, chipFilas: 1, banda: 976, bandaAlto: 104 },
-    historia: { w: 1080, h: 1920, cab: 210, marco: 334, titulo: { size: 66, min: 48, lineas: 3 }, chipFilas: 2, banda: 1600, bandaAlto: 96 },
+    post: { w: 1080, h: 1080, cab: 44, marco: 156, titulo: { size: 54, min: 40, lineas: 2 }, chipFilas: 1, banda: 960 },
+    historia: { w: 1080, h: 1920, cab: 210, marco: 334, titulo: { size: 66, min: 48, lineas: 3 }, chipFilas: 2, banda: 1560 },
   };
 
   const fotos = new Map();
@@ -108,7 +108,7 @@ const Plantilla = (() => {
     ctx.beginPath(); ctx.moveTo(x + t * .25, y + t * .1); ctx.lineTo(x + t * .9, y + t * .1); ctx.lineTo(x + t * .9, y + t * .75); ctx.stroke();
   }
 
-  /* datos: { titulo, precio, precioAntes, descuento, chips[], etiqueta, foto, marca, frase, telefono, instagram }
+  /* datos: { titulo, precio, precioAntes, descuento, chips[], etiqueta, foto, marca, frase, telefono, instagram, enlace }
      Devuelve { canvas, sinFoto } */
   async function crear(datos, formato = "post") {
     const F = FORMATOS[formato];
@@ -194,11 +194,12 @@ const Plantilla = (() => {
 
     // Banda de contacto
     ctx.fillStyle = NEGRO; ctx.fillRect(0, F.banda, F.w, F.h - F.banda);
-    const by2 = F.banda + F.bandaAlto / 2 + 13;
     ctx.font = fuente(800, 36); ctx.fillStyle = AMARILLO;
+    ctx.fillText(datos.enlace, M, F.banda + 50, ancho);
+    const by2 = F.banda + 96;
+    ctx.font = fuente(600, 28); ctx.fillStyle = BLANCO;
     ctx.fillText(`WhatsApp ${datos.telefono}`, M, by2);
     if (datos.instagram) {
-      ctx.font = fuente(600, 30); ctx.fillStyle = BLANCO;
       const t = `@${datos.instagram}`;
       ctx.fillText(t, F.w - M - ctx.measureText(t).width, by2);
     }
