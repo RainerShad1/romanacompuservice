@@ -544,7 +544,7 @@ function datosPromo(p) {
     titulo: f.titulo, foto: p.img || "", etiqueta: f.condicion,
     chips: [...f.resumen, ...(garantia ? [`${garantia} de garantía`] : [])],
     precio: money(finalPrice(p)), precioAntes: p.oferta ? money(p.precio) : "", descuento: p.oferta ? `-${c.descuento || 0}%` : "",
-    nota: p.oferta ? "¡Solo disponible en la tienda!" : "",
+    nota: p.oferta ? "¡Solo disponible en la tienda virtual!" : "",
     marca: c.marca || "Romana CompuService", frase: c.frase || "", telefono: c.telefono || "", instagram: c.instagram || "",
     enlace: location.hostname === "localhost" ? "romanacompuservice-tienda.vercel.app" : location.host,
   };
