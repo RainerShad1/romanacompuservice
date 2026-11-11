@@ -735,8 +735,12 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const ic = (name) => `<i data-lucide="${name}"></i>`;
 const refreshIcons = () => { if (window.lucide) lucide.createIcons(); };
 const titleCase = (s) => s.toLowerCase().replace(/(^|\s)\S/g, (c) => c.toUpperCase());
-/* Precio con descuento redondeado a múltiplos de 5 */
-const finalPrice = (p) => p.oferta ? Math.round((p.precio * (1 - CONFIG.descuento / 100)) / 5) * 5 : p.precio;
+/* Descuento del producto (si no tiene uno propio, el general). Precio redondeado a múltiplos de 5 */
+const pct = (p) => p.descuento || CONFIG.descuento || 0;
+const finalPrice = (p) => p.oferta ? Math.round((p.precio * (1 - pct(p) / 100)) / 5) * 5 : p.precio;
+const ofertas = () => PRODUCTS.filter((p) => p.oferta && available(p));
+const maxPct = () => Math.max(0, ...ofertas().map(pct)) || CONFIG.descuento || 0;
+const pctVaria = () => new Set(ofertas().map(pct)).size > 1;
 /* Producto sin foto: logo de la tienda animado (la flecha "sube" y el logo flota).
    El desfase por id evita que todos se muevan al mismo tiempo. */
 const logoPh = (id) => `<span class="ph" style="--d:${-((id || 0) % 6) * 0.45}s" role="img" aria-label="${esc(CONFIG.marca || "Logo")}">
@@ -789,7 +793,7 @@ const save = () => { store.set("cart", state.cart); store.set("viewed", state.vi
 const available = (p) => p.stock > 0;
 const lists = {
   best:     { t: "Más vendidos", i: "flame", s: "Lo que más piden nuestros clientes", f: () => [...PRODUCTS].sort((a, b) => b.vendidos - a.vendidos) },
-  offers:   { t: "Ofertas del día", i: "zap", s: () => `${CONFIG.descuento}% OFF en estos productos`, f: () => PRODUCTS.filter((p) => p.oferta) },
+  offers:   { t: "Ofertas del día", i: "zap", s: () => `${pctVaria() ? "Hasta " : ""}${maxPct()}% OFF en estos productos`, f: () => PRODUCTS.filter((p) => p.oferta) },
   again:    { t: "Vuelve a comprar", i: "rotate-ccw", s: "Productos que ya compraste antes", f: () => state.bought.map(byId).filter(Boolean),
               empty: "Aquí aparecerán los productos que compres." },
   inspired: { t: "Inspirado en lo que viste", i: "sparkles", s: "Selección personalizada para ti", f: inspired,
@@ -814,7 +818,7 @@ function card(p) {
     <div class="thumb" data-action="detail" data-id="${p.id}">
       ${icon(p)}
       <div class="tags">
-        ${p.oferta && available(p) ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}
+        ${p.oferta && available(p) ? `<span class="tag off">-${pct(p)}%</span>` : ""}
         ${inCartQty(p.id) ? `<span class="tag incart" data-incart="${p.id}">${ic("shopping-bag")}${inCartQty(p.id)}</span>` : ""}
         ${!available(p) ? '<span class="tag out">Agotado</span>' : ""}
       </div>
@@ -856,7 +860,7 @@ function renderHome() {
         </div>
         <div class="stats">
           <div><b>${PRODUCTS.length}+</b><span>Productos</span></div>
-          <div><b>${CONFIG.descuento}%</b><span>Off en ofertas</span></div>
+          <div><b>${maxPct()}%</b><span>${pctVaria() ? "Off máx. en ofertas" : "Off en ofertas"}</span></div>
           <div><b>24h</b><span>Entrega rápida</span></div>
         </div>
       </div>
@@ -867,7 +871,7 @@ function renderHome() {
       </div>
     </div>
     <div class="features">
-      <div class="feature"><span class="ic">${ic("badge-percent")}</span><div><b>Ofertas hasta ${CONFIG.descuento}%</b><span>Descuentos cada día</span></div></div>
+      <div class="feature"><span class="ic">${ic("badge-percent")}</span><div><b>Ofertas hasta ${maxPct()}%</b><span>Descuentos cada día</span></div></div>
       ${deliveryOn() ? `<div class="feature"><span class="ic">${ic("truck")}</span><div><b>Delivery disponible</b><span>Te lo llevamos a casa</span></div></div>` : `<div class="feature"><span class="ic">${ic("store")}</span><div><b>Retiro en tienda</b><span>Pide aquí y pasa a buscarlo</span></div></div>`}
       <div class="feature"><span class="ic">${ic("shield-check")}</span><div><b>Garantía en todos</b><span>Compra con confianza</span></div></div>
       <div class="feature"><span class="ic">${ic("wrench")}</span><div><b>Servicio técnico</b><span>Reparación y mantenimiento</span></div></div>
@@ -946,7 +950,7 @@ function renderFooter() {
 
 function render() {
   if (!idEnUrl()) document.title = tituloTienda();
-  $("#announce").innerHTML = `${deliveryOn() ? `<span>${ic("truck")}Delivery en La Romana</span>` : `<span>${ic("store")}Pide en línea y retira en tienda</span>`}<span>${ic("shield-check")}Garantía en todos los productos</span><span>${ic("badge-percent")}Ofertas hasta ${CONFIG.descuento}% OFF</span><span>${ic("message-circle")}${esc(CONFIG.telefono)}</span>`;
+  $("#announce").innerHTML = `${deliveryOn() ? `<span>${ic("truck")}Delivery en La Romana</span>` : `<span>${ic("store")}Pide en línea y retira en tienda</span>`}<span>${ic("shield-check")}Garantía en todos los productos</span><span>${ic("badge-percent")}Ofertas hasta ${maxPct()}% OFF</span><span>${ic("message-circle")}${esc(CONFIG.telefono)}</span>`;
   $("#catsNav").innerHTML = `<button class="chip ${state.view === "catalog" && !state.cat && !state.list && !state.q ? "active" : ""}" data-action="catalog">${ic("layout-grid")}Todos</button>` +
     categories.map((c) => `<button class="chip ${state.cat === c ? "active" : ""}" data-action="cat" data-val="${esc(c)}">${ic(ICONS[c] || "package")}${esc(titleCase(c))}</button>`).join("");
   $("#app").innerHTML = state.view === "home" ? renderHome() : renderCatalog();
@@ -1123,7 +1127,7 @@ function showDetail(id) {
   const similar = PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4);
   const fi = ficha(p);
   modal(`${modalHead(esc(fi.titulo), esc(titleCase(p.cat)))}
-    <div class="thumb detail-thumb${p.img ? " has-img" : ""}" ${p.img ? `data-action="viewer" data-id="${p.id}"` : ""}>${icon(p)}${p.img ? `<button type="button" class="zoom-btn" data-action="viewer" data-id="${p.id}" aria-label="Ver foto en pantalla completa" title="Pantalla completa">${ic("maximize-2")}</button>` : ""}<div class="tags">${p.oferta ? `<span class="tag off">-${CONFIG.descuento}%</span>` : ""}${fi.condicion ? `<span class="tag cond">${esc(fi.condicion)}</span>` : ""}</div></div>
+    <div class="thumb detail-thumb${p.img ? " has-img" : ""}" ${p.img ? `data-action="viewer" data-id="${p.id}"` : ""}>${icon(p)}${p.img ? `<button type="button" class="zoom-btn" data-action="viewer" data-id="${p.id}" aria-label="Ver foto en pantalla completa" title="Pantalla completa">${ic("maximize-2")}</button>` : ""}<div class="tags">${p.oferta ? `<span class="tag off">-${pct(p)}%</span>` : ""}${fi.condicion ? `<span class="tag cond">${esc(fi.condicion)}</span>` : ""}</div></div>
     <div class="prices"><span class="price" style="font-size:28px">${money(finalPrice(p))}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}<button type="button" class="share-btn" data-action="share" data-id="${p.id}">${ic("share-2")}Compartir</button></div>
     <span class="stock ${p.stock > 0 ? "" : "low"}" style="margin-top:6px">${ic(p.stock > 0 ? "package-check" : "package-x")}${p.stock > 0 ? "En stock" : "Agotado por ahora"}</span>
     ${fi.specs.length ? `<dl class="specs">${fi.specs.filter(([k]) => k !== "Condición").map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}

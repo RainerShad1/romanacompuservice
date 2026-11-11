@@ -18,14 +18,14 @@ module.exports = async (req, res) => {
     const Ficha = new Function(`${fichaJs}; return Ficha;`)();
     const head = { apikey: key, Authorization: `Bearer ${key}` };
     const [[p], [cfg]] = await Promise.all([
-      fetch(`${url}/rest/v1/products?id=eq.${id}&oculto=eq.false&select=id,nombre,cat,precio,oferta,img,stock`, { headers: head }).then((r) => r.json()),
+      fetch(`${url}/rest/v1/products?id=eq.${id}&oculto=eq.false&select=id,nombre,cat,precio,oferta,descuento,img,stock`, { headers: head }).then((r) => r.json()),
       fetch(`${url}/rest/v1/settings?id=eq.1&select=data`, { headers: head }).then((r) => r.json()),
     ]);
     if (!p) throw new Error("no existe");
 
     const c = (cfg && cfg.data) || {};
     const f = Ficha.de(p.nombre, p.cat);
-    const precio = p.oferta ? Math.round((p.precio * (1 - (c.descuento || 0) / 100)) / 5) * 5 : Number(p.precio);
+    const precio = p.oferta ? Math.round((p.precio * (1 - (p.descuento || c.descuento || 0) / 100)) / 5) * 5 : Number(p.precio);
     const money = `${c.moneda || "RD$"}${precio.toLocaleString("en-US")}`;
     const titulo = `${f.titulo} · ${money}`;
     const desc = [f.resumen.join(" · "), f.condicion, p.stock > 0 ? "Disponible" : "Agotado por ahora", c.marca || "Romana CompuService"].filter(Boolean).join(" · ");

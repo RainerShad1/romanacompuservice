@@ -285,7 +285,9 @@ const ui = { tab: "pedidos", q: "", cat: "", filter: "", editing: null, photoBlo
 const money = (n) => (db.config.moneda || "RD$") + Number(n || 0).toLocaleString("en-US");
 const catIcon = (c) => (db.categorias.find((x) => x.name === c) || {}).icon || "package";
 const catNames = () => db.categorias.map((c) => c.name);
-const finalPrice = (p) => p.oferta ? Math.round(p.precio * (1 - (db.config.descuento || 0) / 100) / 5) * 5 : p.precio;
+// Descuento propio del producto o, si no tiene, el general
+const pct = (p) => p.descuento || db.config.descuento || 0;
+const finalPrice = (p) => p.oferta ? Math.round(p.precio * (1 - pct(p) / 100) / 5) * 5 : p.precio;
 const profById = (id) => db.profiles.find((p) => p.id === id);
 
 function toast(msg, i = "circle-check") {
@@ -512,7 +514,7 @@ function productRow(p) {
       <div class="pmeta"><span>${esc(p.cat)}</span>
         ${p.stock <= 0 ? `<span class="pill out">Agotado</span>` : p.stock <= 5 ? `<span class="pill low">Quedan ${p.stock}</span>` : ""}
         ${p.oculto ? `<span class="pill hid">${ic("eye-off")}Oculto</span>` : ""}
-        ${p.oferta ? `<span>${ic("badge-percent")}Final: ${money(finalPrice(p))}</span>` : ""}</div></div>
+        ${p.oferta ? `<span>${ic("badge-percent")}-${pct(p)}% · Final: ${money(finalPrice(p))}</span>` : ""}</div></div>
     <div class="pfields">
       <div><div class="lbl-m">Precio</div><div class="inl money"><span>${esc(db.config.moneda || "RD$")}</span><input type="number" min="0" step="5" value="${p.precio}" data-field="precio" data-id="${p.id}" aria-label="Precio"></div></div>
       <div><div class="lbl-m">Existencia</div><div class="inl"><input type="number" min="0" step="1" value="${p.stock}" data-field="stock" data-id="${p.id}" aria-label="Existencia"></div></div>
@@ -543,7 +545,7 @@ function datosPromo(p) {
   return {
     titulo: f.titulo, foto: p.img || "", etiqueta: f.condicion,
     chips: [...f.resumen, ...(garantia ? [`${garantia} de garantía`] : [])],
-    precio: money(finalPrice(p)), precioAntes: p.oferta ? money(p.precio) : "", descuento: p.oferta ? `-${c.descuento || 0}%` : "",
+    precio: money(finalPrice(p)), precioAntes: p.oferta ? money(p.precio) : "", descuento: p.oferta ? `-${pct(p)}%` : "",
     nota: p.oferta ? "¡Solo disponible en la tienda virtual!" : "",
     marca: c.marca || "Romana CompuService", frase: c.frase || "", telefono: c.telefono || "", instagram: c.instagram || "",
     enlace: location.hostname === "localhost" ? "romanacompuservice-tienda.vercel.app" : location.host,
@@ -622,8 +624,9 @@ function openProduct(id) {
         <label class="field">Precio (${esc(db.config.moneda || "RD$")})<input name="precio" type="number" min="0" step="5" required value="${p.precio}"></label>
         <label class="field">Existencia<small>0 = agotado</small><input name="stock" type="number" min="0" step="1" required value="${p.stock}"></label>
         <label class="field">Vendidos<small>Ordena “Más vendidos”</small><input name="vendidos" type="number" min="0" step="1" value="${p.vendidos || 0}"></label>
+        <div class="field" style="align-content:end"><label class="check"><input type="checkbox" name="oferta" ${p.oferta ? "checked" : ""}>En oferta</label></div>
+        <label class="field">Descuento de la oferta (%)<small>Vacío = el general (${db.config.descuento || 0}%)</small><input name="descuento" type="number" min="1" max="90" step="1" inputmode="numeric" placeholder="${db.config.descuento || 0}" value="${p.descuento ?? ""}"></label>
         <label class="field">Fecha de llegada<small>Ordena “Recién llegados”</small><input name="nuevo" type="date" value="${esc(p.nuevo || today())}"></label>
-        <div class="field" style="align-content:end"><label class="check"><input type="checkbox" name="oferta" ${p.oferta ? "checked" : ""}>En oferta (-${db.config.descuento || 0}%)</label></div>
         <label class="field full">Descripción<small>Opcional. Se muestra al abrir el producto.</small><textarea name="descripcion" maxlength="2000" placeholder="Características, estado, garantía…">${esc(p.descripcion)}</textarea></label>
         <div class="field full"><label class="check"><input type="checkbox" name="oculto" ${p.oculto ? "checked" : ""}>Ocultar de la tienda</label></div>
       </div>
@@ -675,6 +678,7 @@ async function saveProduct(form) {
     const row = {
       nombre: f.nombre.trim(), cat: f.cat, precio: Math.max(0, Number(f.precio) || 0), stock: Math.max(0, Math.floor(Number(f.stock) || 0)),
       vendidos: Math.max(0, Math.floor(Number(f.vendidos) || 0)), nuevo: f.nuevo || today(), oferta: !!f.oferta, oculto: !!f.oculto,
+      descuento: f.descuento.trim() ? Math.min(90, Math.max(1, Math.round(Number(f.descuento)) || 1)) : null,
       descripcion: f.descripcion.trim() || null, img: img || null, updated_at: new Date().toISOString(),
     };
     const q = p.id == null ? sb.from("products").insert(row) : sb.from("products").update(row).eq("id", p.id);
@@ -729,8 +733,8 @@ function renderConfig() {
       ${f("telefono", "Teléfono visible", "Ej: (829) 753-8736")}
       ${f("instagram", "Instagram", "Solo el usuario, sin @")}
     </div></div>
-    <div class="box"><h3>${ic("badge-percent")}Precios y entrega</h3><p>El descuento aplica a los productos marcados “En oferta”.</p><div class="form-grid">
-      ${f("descuento", "Descuento de ofertas (%)", "", "number")}
+    <div class="box"><h3>${ic("badge-percent")}Precios y entrega</h3><p>El descuento general aplica a los productos “En oferta” que no tengan su propio descuento.</p><div class="form-grid">
+      ${f("descuento", "Descuento general de ofertas (%)", "Cada producto puede tener el suyo al editarlo", "number")}
       ${f("costoDelivery", "Costo del delivery", "", "number")}
       ${f("moneda", "Moneda", "Ej: RD$")}
     </div></div>
