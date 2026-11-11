@@ -355,7 +355,28 @@
   .viewer-x { position: fixed; z-index: 121; top: max(14px, env(safe-area-inset-top)); right: 14px; width: 46px; height: 46px; border-radius: 50%; border: 0; background: rgba(255,255,255,.14); color: #fff; display: grid; place-items: center; }
   .viewer-x .lucide { width: 24px; height: 24px; }
   .viewer-hint { position: fixed; z-index: 121; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); color: rgba(255,255,255,.75); font-size: 13px; background: rgba(255,255,255,.1); padding: 6px 12px; border-radius: 999px; white-space: nowrap; pointer-events: none; }
+  .viewer-nav { position: fixed; z-index: 121; top: 50%; translate: 0 -50%; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.55); color: #fff; display: grid; place-items: center; }
+  .viewer-nav.prev { left: 12px; } .viewer-nav.next { right: 12px; }
+  .viewer-nav .lucide { width: 26px; height: 26px; }
+  .viewer-count { position: fixed; z-index: 121; top: max(24px, calc(env(safe-area-inset-top) + 10px)); left: 18px; color: #fff; font-size: 14px; font-weight: 700; background: rgba(255,255,255,.14); padding: 6px 12px; border-radius: 999px; pointer-events: none; }
+  .viewer.zoomed .viewer-nav { display: none; }
   @keyframes viewerIn { from { opacity: 0; } to { opacity: 1; } }
+  /* Varias fotos: se deslizan con el dedo; puntos y miniaturas para saber cuál se ve */
+  .gal { position: absolute; inset: 0; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .gal::-webkit-scrollbar { display: none; }
+  .gal-slide { position: relative; flex: 0 0 100%; scroll-snap-align: center; overflow: hidden; }
+  .gal-dots { position: absolute; z-index: 2; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 6px; padding: 6px 9px; border-radius: 999px; background: rgba(10,10,10,.45); pointer-events: none; }
+  .gal-dots span { width: 7px; height: 7px; border-radius: 4px; background: rgba(255,255,255,.55); transition: width .2s var(--ease), background .2s; }
+  .gal-dots span.on { width: 18px; background: #fff; }
+  .gal-nav { position: absolute; z-index: 2; top: 50%; translate: 0 -50%; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(10,10,10,.6); color: #fff; }
+  .gal-nav.prev { left: 10px; } .gal-nav.next { right: 10px; }
+  .gal-nav .lucide { width: 22px; height: 22px; }
+  @media (hover: none) { .gal-nav { display: none; } }
+  .gal-thumbs { display: flex; gap: 8px; overflow-x: auto; margin: -4px 0 14px; padding: 2px; scrollbar-width: none; }
+  .gal-thumbs::-webkit-scrollbar { display: none; }
+  .gal-thumbs button { flex: 0 0 58px; height: 58px; padding: 0; border-radius: 12px; overflow: hidden; border: 2px solid transparent; background: var(--surface-2); opacity: .65; transition: opacity .2s, border-color .2s; }
+  .gal-thumbs button.on { border-color: var(--yellow); opacity: 1; }
+  .gal-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .detail-thumb .lucide { width: 30%; height: 30%; }
   .perks-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 14px 0; }
   .perks-list div { background: var(--surface-2); border-radius: 12px; padding: 10px; font-size: 12px; font-weight: 600; display: grid; justify-items: center; gap: 4px; text-align: center; }
@@ -769,7 +790,10 @@ function salirDeProducto() {
   history.pushState({}, "", "/");
   document.title = tituloTienda();
 }
-const icon = (p) => p.img ? `<img class="pic-bg" src="${esc(p.img)}" alt="" aria-hidden="true"><img class="pic" src="${esc(p.img)}" alt="">` : logoPh(p.id);
+const foto = (src) => `<img class="pic-bg" src="${esc(src)}" alt="" aria-hidden="true"><img class="pic" src="${esc(src)}" alt="">`;
+const icon = (p) => p.img ? foto(p.img) : logoPh(p.id);
+/* Todas las fotos del producto: la principal y las adicionales */
+const fotosDe = (p) => [p.img, ...(p.imgs || [])].filter(Boolean);
 const waLink = (text) => `https://wa.me/${CONFIG.whatsapp}${text ? "?text=" + encodeURIComponent(text) : ""}`;
 const igLink = () => `https://www.instagram.com/${CONFIG.instagram}/`;
 
@@ -1099,20 +1123,54 @@ function markViewed(id) {
   save();
 }
 
-/* Foto del producto en pantalla completa: toca para acercar, la X o Esc para salir */
-function openViewer(p) {
-  if (!p?.img) return;
+/* Foto del producto en pantalla completa: toca para acercar, desliza o usa las flechas
+   para pasar de foto, la X o Esc para salir */
+function openViewer(p, inicio = 0) {
+  const fs = p ? fotosDe(p) : [];
+  if (!fs.length) return;
   closeViewer();
+  const varias = fs.length > 1;
+  let i = Math.min(Math.max(0, inicio), fs.length - 1);
   const v = document.createElement("div");
   v.className = "viewer"; v.id = "viewer";
-  v.setAttribute("role", "dialog"); v.setAttribute("aria-label", "Foto de " + titulo(p));
-  v.innerHTML = `<img src="${esc(p.img)}" alt="${esc(titulo(p))}"><button type="button" class="viewer-x" aria-label="Cerrar">${ic("x")}</button><div class="viewer-hint">Toca la foto para acercar</div>`;
+  v.setAttribute("role", "dialog"); v.setAttribute("aria-label", "Fotos de " + titulo(p));
+  v.innerHTML = `<img src="${esc(fs[i])}" alt="${esc(titulo(p))}"><button type="button" class="viewer-x" aria-label="Cerrar">${ic("x")}</button>
+    ${varias ? `<button type="button" class="viewer-nav prev" aria-label="Foto anterior">${ic("chevron-left")}</button><button type="button" class="viewer-nav next" aria-label="Foto siguiente">${ic("chevron-right")}</button><div class="viewer-count">${i + 1} / ${fs.length}</div>` : ""}
+    <div class="viewer-hint">Toca la foto para acercar${varias ? " · desliza para ver más" : ""}</div>`;
+  const img = v.querySelector("img");
+  v.ir = (d) => {
+    if (!varias) return;
+    i = (i + d + fs.length) % fs.length;
+    img.src = fs[i]; v.classList.remove("zoomed"); v.scrollTo(0, 0);
+    v.querySelector(".viewer-count").textContent = `${i + 1} / ${fs.length}`;
+  };
   v.addEventListener("click", (e) => {
-    if (e.target.tagName === "IMG") { v.classList.toggle("zoomed"); v.querySelector(".viewer-hint")?.remove(); return; }
+    const nav = e.target.closest(".viewer-nav");
+    if (nav) return v.ir(nav.classList.contains("prev") ? -1 : 1);
+    if (e.target === img) { v.classList.toggle("zoomed"); v.querySelector(".viewer-hint")?.remove(); return; }
     closeViewer();
   });
+  // Deslizar con un dedo cambia de foto (no mientras está acercada)
+  let x0 = null;
+  v.addEventListener("touchstart", (e) => { x0 = e.touches.length === 1 && !v.classList.contains("zoomed") ? e.touches[0].clientX : null; }, { passive: true });
+  v.addEventListener("touchend", (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) v.ir(dx < 0 ? 1 : -1);
+  }, { passive: true });
   document.body.appendChild(v);
   refreshIcons();
+}
+/* Galería de la ficha: qué foto se está viendo y cómo ir a otra */
+const galIndex = () => { const g = $("#gal"); return g ? Math.round(g.scrollLeft / g.clientWidth) : 0; };
+function galIr(i) {
+  const g = $("#gal"); if (!g) return;
+  const n = g.children.length;
+  g.scrollTo({ left: ((i + n) % n) * g.clientWidth, behavior: "smooth" });
+}
+function galMarcar() {
+  const i = galIndex();
+  document.querySelectorAll(".gal-dots span, .gal-thumbs button").forEach((el) => el.classList.toggle("on", Number(el.dataset.i) === i));
 }
 function closeViewer() { $("#viewer")?.remove(); }
 
@@ -1126,8 +1184,17 @@ function showDetail(id) {
   const q = state.qty[id] || 1;
   const similar = PRODUCTS.filter((x) => x.cat === p.cat && x.id !== p.id).slice(0, 4);
   const fi = ficha(p);
+  const fs = fotosDe(p), varias = fs.length > 1;
+  const fotoActual = otro ? 0 : galIndex(); // al cambiar la cantidad se queda en la misma foto
+  const galeria = varias
+    ? `<div class="gal" id="gal">${fs.map((src) => `<div class="gal-slide">${foto(src)}</div>`).join("")}</div>
+      <button type="button" class="gal-nav prev" data-action="gal-prev" aria-label="Foto anterior">${ic("chevron-left")}</button>
+      <button type="button" class="gal-nav next" data-action="gal-next" aria-label="Foto siguiente">${ic("chevron-right")}</button>
+      <div class="gal-dots">${fs.map((_, i) => `<span data-i="${i}" class="${i ? "" : "on"}"></span>`).join("")}</div>`
+    : icon(p);
   modal(`${modalHead(esc(fi.titulo), esc(titleCase(p.cat)))}
-    <div class="thumb detail-thumb${p.img ? " has-img" : ""}" ${p.img ? `data-action="viewer" data-id="${p.id}"` : ""}>${icon(p)}${p.img ? `<button type="button" class="zoom-btn" data-action="viewer" data-id="${p.id}" aria-label="Ver foto en pantalla completa" title="Pantalla completa">${ic("maximize-2")}</button>` : ""}<div class="tags">${p.oferta ? `<span class="tag off">-${pct(p)}%</span>` : ""}${fi.condicion ? `<span class="tag cond">${esc(fi.condicion)}</span>` : ""}</div></div>
+    <div class="thumb detail-thumb${p.img ? " has-img" : ""}" ${p.img ? `data-action="viewer" data-id="${p.id}"` : ""}>${galeria}${p.img ? `<button type="button" class="zoom-btn" data-action="viewer" data-id="${p.id}" aria-label="Ver foto en pantalla completa" title="Pantalla completa">${ic("maximize-2")}</button>` : ""}<div class="tags">${p.oferta ? `<span class="tag off">-${pct(p)}%</span>` : ""}${fi.condicion ? `<span class="tag cond">${esc(fi.condicion)}</span>` : ""}</div></div>
+    ${varias ? `<div class="gal-thumbs">${fs.map((src, i) => `<button type="button" data-action="gal" data-i="${i}" class="${i ? "" : "on"}" aria-label="Ver foto ${i + 1}"><img src="${esc(src)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}
     <div class="prices"><span class="price" style="font-size:28px">${money(finalPrice(p))}</span>${p.oferta ? `<span class="price-old">${money(p.precio)}</span>` : ""}<button type="button" class="share-btn" data-action="share" data-id="${p.id}">${ic("share-2")}Compartir</button></div>
     <span class="stock ${p.stock > 0 ? "" : "low"}" style="margin-top:6px">${ic(p.stock > 0 ? "package-check" : "package-x")}${p.stock > 0 ? "En stock" : "Agotado por ahora"}</span>
     ${fi.specs.length ? `<dl class="specs">${fi.specs.filter(([k]) => k !== "Condición").map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
@@ -1142,6 +1209,11 @@ function showDetail(id) {
     <button class="match btn-block" style="margin-top:6px" data-action="match" data-id="${p.id}">${ic("badge-dollar-sign")}¿Lo viste más barato? Igualamos precio</button>
     ${similar.length ? `<div class="similar"><h4>También te puede interesar</h4>${similar.map((s) => `<div class="line" data-action="detail" data-id="${s.id}"><div class="mini">${icon(s)}</div><div class="t">${esc(titulo(s))}</div><strong>${money(finalPrice(s))}</strong></div>`).join("")}</div>` : ""}`);
   if (otro) $("#modal").scrollTop = 0;
+  const g = $("#gal");
+  if (g) {
+    g.addEventListener("scroll", galMarcar, { passive: true });
+    if (fotoActual) { g.scrollLeft = fotoActual * g.clientWidth; galMarcar(); }
+  }
 }
 
 /* ======================================================
@@ -1537,7 +1609,10 @@ document.addEventListener("click", (e) => {
     case "add": if (addToCart(id, state.qty[id] || 1, el)) { state.qty[id] = 1; closeAll(); } break;
     case "buy": if (addToCart(id, state.qty[id] || 1) || state.cart.some((l) => l.id === id)) showCheckout(); break;
     case "detail": showDetail(id); break;
-    case "viewer": openViewer(byId(id)); break;
+    case "viewer": openViewer(byId(id), galIndex()); break;
+    case "gal": galIr(Number(el.dataset.i)); break;
+    case "gal-prev": galIr(galIndex() - 1); break;
+    case "gal-next": galIr(galIndex() + 1); break;
     case "cart": openPanel($("#cartDrawer")); break;
     case "cart+": case "cart-": {
       const up = el.dataset.action === "cart+", r = el.getBoundingClientRect();
@@ -1598,7 +1673,9 @@ document.addEventListener("input", (e) => {
   const p = Math.max(0, pos + el.value.length - before); el.setSelectionRange(p, p);
   updateCedulaHint(el);
 });
-document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if ($("#viewer")) return closeViewer(); closeAll(); salirDeProducto(); });
+document.addEventListener("keydown", (e) => {
+  if ($("#viewer") && (e.key === "ArrowLeft" || e.key === "ArrowRight")) return $("#viewer").ir(e.key === "ArrowLeft" ? -1 : 1);
+  if (e.key !== "Escape") return; if ($("#viewer")) return closeViewer(); closeAll(); salirDeProducto(); });
 // Atrás / adelante del navegador: abre o cierra el producto de la dirección
 window.addEventListener("popstate", () => {
   closeViewer();

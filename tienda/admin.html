@@ -171,11 +171,19 @@
   .mhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .mhead h2 { margin: 0; font-size: 20px; }
   .x { border: 0; background: var(--surface-2); width: 38px; height: 38px; border-radius: 999px; display: grid; place-items: center; }
-  .photo { display: grid; grid-template-columns: 130px 1fr; gap: 14px; align-items: center; }
-  .photo .prev { width: 130px; height: 130px; border-radius: 16px; background: var(--surface-2); display: grid; place-items: center; overflow: hidden; border: 1.5px dashed var(--line); }
-  .photo .prev img { width: 100%; height: 100%; object-fit: cover; }
-  .photo .prev .lucide { width: 34px; height: 34px; color: var(--muted); }
-  .photo .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 10px; margin-bottom: 10px; }
+  .ftile { position: relative; aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: var(--surface-2); border: 1.5px solid var(--line); padding: 0; }
+  .ftile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ftile.main { border: 2.5px solid var(--yellow-2); }
+  .ftile.add { border-style: dashed; display: grid; place-items: center; align-content: center; gap: 4px; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; }
+  .ftile.add .lucide { width: 26px; height: 26px; }
+  .fbtn { position: absolute; top: 6px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(10,10,10,.72); color: #fff; display: grid; place-items: center; }
+  .fbtn.del { right: 6px; } .fbtn.star { left: 6px; }
+  .fbtn .lucide { width: 15px; height: 15px; }
+  .fmain { position: absolute; left: 6px; bottom: 6px; background: var(--yellow); color: var(--black); font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 999px; }
+  .url-row { display: flex; gap: 8px; }
+  .url-row input { flex: 1; min-width: 0; height: 38px; border: 1px solid var(--line); border-radius: 10px; padding: 0 10px; }
+  .fotos-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
   .mfoot { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
   .toast { position: fixed; bottom: 22px; left: 50%; transform: translate(-50%, 20px); background: var(--black); color: #fff; padding: 12px 18px; border-radius: 14px; z-index: 80; opacity: 0; transition: opacity .25s, transform .3s var(--ease); pointer-events: none; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
   .toast .lucide { color: var(--yellow); }
@@ -203,7 +211,6 @@
     .crow select { grid-column: 2 / 3; }
     .crow .n { grid-column: 1 / 2; text-align: center; }
     .form-grid { grid-template-columns: 1fr; }
-    .photo { grid-template-columns: 1fr; justify-items: start; }
     .top .status { display: none; }
   }
 
@@ -257,7 +264,7 @@
 <div class="overlay" id="overlay" data-action="close"></div>
 <div class="modal" id="modal" role="dialog" aria-modal="true"></div>
 <div class="toast" id="toast"></div>
-<input type="file" id="photoFile" accept="image/*" hidden>
+<input type="file" id="photoFile" accept="image/*" multiple hidden>
 
 <script>
 /* ======================================================
@@ -280,7 +287,7 @@ const waTo = (tel, text = "") => `https://wa.me/1${String(tel).replace(/\D/g, ""
 
 const db = { config: {}, categorias: [], productos: [], profiles: [], orders: [] };
 const auth = { checked: false, session: null, isAdmin: false };
-const ui = { tab: "pedidos", q: "", cat: "", filter: "", editing: null, photoBlob: null, oFilter: "activos", oQ: "", cView: "", cQ: "" };
+const ui = { tab: "pedidos", q: "", cat: "", filter: "", editing: null, fotos: [], oFilter: "activos", oQ: "", cView: "", cQ: "" };
 
 const money = (n) => (db.config.moneda || "RD$") + Number(n || 0).toLocaleString("en-US");
 const catIcon = (c) => (db.categorias.find((x) => x.name === c) || {}).icon || "package";
@@ -295,7 +302,7 @@ function toast(msg, i = "circle-check") {
   clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 2600);
 }
 function openModal(html) { $("#modal").innerHTML = html; refreshIcons(); $("#overlay").classList.add("open"); $("#modal").classList.add("open"); }
-function closeModal() { $("#overlay").classList.remove("open"); $("#modal").classList.remove("open"); ui.editing = null; ui.photoBlob = null; promo = null; }
+function closeModal() { $("#overlay").classList.remove("open"); $("#modal").classList.remove("open"); ui.editing = null; ui.fotos = []; promo = null; }
 function fail(error, msg = "No se pudo guardar") { console.error(error); toast(`${msg}: ${error.message || error}`, "alert-triangle"); }
 
 /* ======================================================
@@ -607,16 +614,14 @@ function descargarPromo() {
 function openProduct(id) {
   const p = id ? { ...db.productos.find((x) => x.id === id) } :
     { id: null, nombre: "", cat: ui.cat || catNames()[0] || "", precio: 0, stock: 1, vendidos: 0, oferta: false, oculto: false, nuevo: today(), descripcion: "", img: "" };
-  ui.editing = p; ui.photoBlob = null;
+  ui.editing = p;
+  ui.fotos = [p.img, ...(p.imgs || [])].filter(Boolean).map((url) => ({ url }));
   openModal(`<div class="mhead"><h2>${id ? "Editar producto" : "Nuevo producto"}</h2><button class="x" data-action="close" aria-label="Cerrar">${ic("x")}</button></div>
     <form id="productForm">
-      <div class="photo" style="margin-bottom:14px">
-        <div class="prev" id="photoPrev"></div>
-        <div><div class="btns">
-          <button type="button" class="btn btn-dark btn-sm" data-action="photo-upload">${ic("image-plus")}Subir foto</button>
-          <button type="button" class="btn btn-outline btn-sm" data-action="photo-remove">${ic("x")}Quitar</button></div>
-          <input name="img_url" placeholder="o pega el enlace de una imagen" style="width:100%;height:38px;border:1px solid var(--line);border-radius:10px;padding:0 10px" value="${p.img && !p.img.includes("/storage/v1/object/public/productos/") ? esc(p.img) : ""}">
-          <div style="font-size:12px;color:var(--muted);margin-top:6px">La foto se reduce automáticamente para que la tienda cargue rápido.</div></div>
+      <div style="margin-bottom:14px">
+        <div class="fotos" id="photoPrev"></div>
+        <div class="url-row"><input name="img_url" type="url" placeholder="o pega el enlace de una imagen"><button type="button" class="btn btn-outline btn-sm" data-action="photo-url">${ic("plus")}Agregar</button></div>
+        <div class="fotos-hint">Hasta ${MAX_FOTOS} fotos. La principal sale en el catálogo y en la imagen para redes; toca ${ic("star")} para cambiarla. Se reducen solas para que la tienda cargue rápido.</div>
       </div>
       <div class="form-grid">
         <label class="field full">Nombre y especificaciones<small>La tienda muestra un título corto y ordena el resto en una ficha (Procesador: …, RAM: …)</small><textarea name="nombre" required maxlength="600" rows="3" placeholder="Ej: Laptop Dell Latitude 3310 ✅Procesador: Core i5 ✅RAM: 8GB ✅Almacenamiento: 256GB SSD">${esc(p.nombre)}</textarea></label>
@@ -635,30 +640,54 @@ function openProduct(id) {
     </form>`);
   renderPhoto();
 }
+/* Fotos del producto: la primera es la principal. Cada una es { url } o, si aún no se sube, { blob, prev } */
+const MAX_FOTOS = 8;
 function renderPhoto() {
-  const p = ui.editing; if (!p) return;
-  const src = ui.photoBlob ? URL.createObjectURL(ui.photoBlob) : p.img;
-  $("#photoPrev").innerHTML = src ? `<img src="${esc(src)}" alt="">` : ic("image");
+  if (!ui.editing) return;
+  const tiles = ui.fotos.map((f, i) => `<div class="ftile${i ? "" : " main"}">
+      <img src="${esc(f.prev || f.url)}" alt="">
+      ${i ? `<button type="button" class="fbtn star" data-action="photo-main" data-val="${i}" title="Usar como principal" aria-label="Usar como principal">${ic("star")}</button>` : `<span class="fmain">Principal</span>`}
+      <button type="button" class="fbtn del" data-action="photo-remove" data-val="${i}" title="Quitar" aria-label="Quitar foto">${ic("x")}</button>
+    </div>`).join("");
+  const add = ui.fotos.length < MAX_FOTOS
+    ? `<button type="button" class="ftile add" data-action="photo-upload">${ic("image-plus")}${ui.fotos.length ? "Agregar" : "Subir fotos"}</button>` : "";
+  $("#photoPrev").innerHTML = tiles + add;
   refreshIcons();
 }
-/* Reduce la foto a máx. 900px (WebP) antes de subirla */
-function loadPhoto(file) {
-  if (!file || !file.type.startsWith("image/")) return;
-  const img = new Image();
-  img.onload = () => {
-    const max = 900, k = Math.min(1, max / Math.max(img.width, img.height));
-    const cv = document.createElement("canvas");
-    cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
-    const ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
-    ctx.drawImage(img, 0, 0, cv.width, cv.height);
-    URL.revokeObjectURL(img.src);
-    cv.toBlob((b) => {
-      if (b && b.type === "image/webp") { ui.photoBlob = b; renderPhoto(); }
-      else cv.toBlob((j) => { ui.photoBlob = j; renderPhoto(); }, "image/jpeg", .85);
-    }, "image/webp", .82);
-    const urlInput = $("#productForm [name=img_url]"); if (urlInput) urlInput.value = "";
-  };
-  img.src = URL.createObjectURL(file);
+/* Reduce la foto a máx. 900px (WebP; JPG si el navegador no puede) antes de subirla */
+function reducirFoto(file) {
+  return new Promise((ok) => {
+    if (!file || !file.type.startsWith("image/")) return ok(null);
+    const img = new Image();
+    img.onerror = () => ok(null);
+    img.onload = () => {
+      const max = 900, k = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+      const ctx = cv.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(img.src);
+      cv.toBlob((b) => (b && b.type === "image/webp" ? ok(b) : cv.toBlob(ok, "image/jpeg", .85)), "image/webp", .82);
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+async function loadPhotos(files) {
+  const editando = ui.editing;
+  const libres = MAX_FOTOS - ui.fotos.length;
+  if ([...files].length > libres) toast(`Solo caben ${MAX_FOTOS} fotos por producto`, "alert-triangle");
+  for (const file of [...files].slice(0, Math.max(0, libres))) {
+    const blob = await reducirFoto(file);
+    if (ui.editing !== editando) return; // cerró el formulario
+    if (blob) { ui.fotos.push({ blob, prev: URL.createObjectURL(blob) }); renderPhoto(); }
+  }
+}
+function addPhotoUrl() {
+  const input = $("#productForm [name=img_url]"), url = input.value.trim();
+  if (!url) return;
+  if (!/^https?:\/\/\S+$/i.test(url)) return toast("Ese enlace no parece de una imagen", "alert-triangle");
+  if (ui.fotos.length >= MAX_FOTOS) return toast(`Solo caben ${MAX_FOTOS} fotos por producto`, "alert-triangle");
+  ui.fotos.push({ url }); input.value = ""; renderPhoto();
 }
 async function uploadPhoto(blob) {
   const ext = blob.type === "image/webp" ? "webp" : "jpg";
@@ -672,14 +701,15 @@ async function saveProduct(form) {
   const p = ui.editing;
   const btn = $("#saveBtn"); btn.disabled = true; btn.innerHTML = `${ic("loader-circle")}Guardando…`; refreshIcons();
   try {
-    let img = p.img || null;
-    if (ui.photoBlob) img = await uploadPhoto(ui.photoBlob);
-    else if (f.img_url.trim()) img = f.img_url.trim();
+    if (f.img_url.trim()) addPhotoUrl(); // enlace pegado sin tocar "Agregar"
+    // Se suben las nuevas; si algo falla y se reintenta, las ya subidas no se repiten
+    await Promise.all(ui.fotos.map(async (foto) => { if (foto.blob) { foto.url = await uploadPhoto(foto.blob); delete foto.blob; } }));
+    const urls = ui.fotos.map((foto) => foto.url);
     const row = {
       nombre: f.nombre.trim(), cat: f.cat, precio: Math.max(0, Number(f.precio) || 0), stock: Math.max(0, Math.floor(Number(f.stock) || 0)),
       vendidos: Math.max(0, Math.floor(Number(f.vendidos) || 0)), nuevo: f.nuevo || today(), oferta: !!f.oferta, oculto: !!f.oculto,
       descuento: f.descuento.trim() ? Math.min(90, Math.max(1, Math.round(Number(f.descuento)) || 1)) : null,
-      descripcion: f.descripcion.trim() || null, img: img || null, updated_at: new Date().toISOString(),
+      descripcion: f.descripcion.trim() || null, img: urls[0] || null, imgs: urls.slice(1), updated_at: new Date().toISOString(),
     };
     const q = p.id == null ? sb.from("products").insert(row) : sb.from("products").update(row).eq("id", p.id);
     const { data, error } = await q.select().single();
@@ -808,7 +838,9 @@ document.addEventListener("click", async (e) => {
     }
     case "close": closeModal(); break;
     case "photo-upload": $("#photoFile").value = ""; $("#photoFile").click(); break;
-    case "photo-remove": ui.editing.img = ""; ui.photoBlob = null; $("#productForm [name=img_url]").value = ""; renderPhoto(); break;
+    case "photo-remove": ui.fotos.splice(Number(val), 1); renderPhoto(); break;
+    case "photo-main": ui.fotos.unshift(...ui.fotos.splice(Number(val), 1)); renderPhoto(); break;
+    case "photo-url": addPhotoUrl(); break;
     case "cat-up": {
       const i = db.categorias.findIndex((c) => c.name === val); if (i <= 0) break;
       const list = [...db.categorias]; [list[i - 1], list[i]] = [list[i], list[i - 1]];
@@ -831,7 +863,7 @@ document.addEventListener("click", async (e) => {
 const lastToggle = {};
 document.addEventListener("change", async (e) => {
   const t = e.target;
-  if (t.id === "photoFile") return loadPhoto(t.files[0]);
+  if (t.id === "photoFile") return loadPhotos(t.files);
   if (t.id === "catFilter") { ui.cat = t.value; return render(); }
   if (t.id === "stFilter") { ui.filter = t.value; return render(); }
   if (t.classList.contains("o-select")) return setOrderState(Number(t.dataset.order), t.value);
