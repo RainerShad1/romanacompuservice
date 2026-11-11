@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
 
     const c = (cfg && cfg.data) || {};
     const f = Ficha.de(p.nombre, p.cat);
-    const precio = p.oferta ? Math.round((p.precio * (1 - (p.descuento || c.descuento || 0) / 100)) / 5) * 5 : Number(p.precio);
+    const precio = p.oferta ? Math.round((p.precio * (1 - (p.descuento || 0) / 100)) / 5) * 5 : Number(p.precio);
     const money = `${c.moneda || "RD$"}${precio.toLocaleString("en-US")}`;
     const titulo = `${f.titulo} · ${money}`;
     const desc = [f.resumen.join(" · "), f.condicion, p.stock > 0 ? "Disponible" : "Agotado por ahora", c.marca || "Romana CompuService"].filter(Boolean).join(" · ");

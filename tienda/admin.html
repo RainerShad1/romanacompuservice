@@ -292,8 +292,8 @@ const ui = { tab: "pedidos", q: "", cat: "", filter: "", editing: null, fotos: [
 const money = (n) => (db.config.moneda || "RD$") + Number(n || 0).toLocaleString("en-US");
 const catIcon = (c) => (db.categorias.find((x) => x.name === c) || {}).icon || "package";
 const catNames = () => db.categorias.map((c) => c.name);
-// Descuento propio del producto o, si no tiene, el general
-const pct = (p) => p.descuento || db.config.descuento || 0;
+// Cada producto en oferta tiene su propio descuento
+const pct = (p) => p.descuento || 0;
 const finalPrice = (p) => p.oferta ? Math.round(p.precio * (1 - pct(p) / 100) / 5) * 5 : p.precio;
 const profById = (id) => db.profiles.find((p) => p.id === id);
 
@@ -630,7 +630,7 @@ function openProduct(id) {
         <label class="field">Existencia<small>0 = agotado</small><input name="stock" type="number" min="0" step="1" required value="${p.stock}"></label>
         <label class="field">Vendidos<small>Ordena “Más vendidos”</small><input name="vendidos" type="number" min="0" step="1" value="${p.vendidos || 0}"></label>
         <div class="field" style="align-content:end"><label class="check"><input type="checkbox" name="oferta" ${p.oferta ? "checked" : ""}>En oferta</label></div>
-        <label class="field">Descuento de la oferta (%)<small>Vacío = el general (${db.config.descuento || 0}%)</small><input name="descuento" type="number" min="1" max="90" step="1" inputmode="numeric" placeholder="${db.config.descuento || 0}" value="${p.descuento ?? ""}"></label>
+        <label class="field">Descuento de la oferta (%)<small>Obligatorio si está en oferta</small><input name="descuento" type="number" min="1" max="90" step="1" inputmode="numeric" placeholder="Ej: 5" value="${p.descuento ?? ""}"></label>
         <label class="field">Fecha de llegada<small>Ordena “Recién llegados”</small><input name="nuevo" type="date" value="${esc(p.nuevo || today())}"></label>
         <label class="field full">Descripción<small>Opcional. Se muestra al abrir el producto.</small><textarea name="descripcion" maxlength="2000" placeholder="Características, estado, garantía…">${esc(p.descripcion)}</textarea></label>
         <div class="field full"><label class="check"><input type="checkbox" name="oculto" ${p.oculto ? "checked" : ""}>Ocultar de la tienda</label></div>
@@ -699,6 +699,10 @@ async function uploadPhoto(blob) {
 async function saveProduct(form) {
   const f = Object.fromEntries(new FormData(form));
   const p = ui.editing;
+  if (f.oferta && !f.descuento.trim()) {
+    const b = form.querySelector("[data-form-err]"); b.innerHTML = ic("alert-circle") + "Pon el porciento de descuento de la oferta."; b.hidden = false; refreshIcons();
+    form.querySelector("[name=descuento]").focus(); return;
+  }
   const btn = $("#saveBtn"); btn.disabled = true; btn.innerHTML = `${ic("loader-circle")}Guardando…`; refreshIcons();
   try {
     if (f.img_url.trim()) addPhotoUrl(); // enlace pegado sin tocar "Agregar"
@@ -763,8 +767,7 @@ function renderConfig() {
       ${f("telefono", "Teléfono visible", "Ej: (829) 753-8736")}
       ${f("instagram", "Instagram", "Solo el usuario, sin @")}
     </div></div>
-    <div class="box"><h3>${ic("badge-percent")}Precios y entrega</h3><p>El descuento general aplica a los productos “En oferta” que no tengan su propio descuento.</p><div class="form-grid">
-      ${f("descuento", "Descuento general de ofertas (%)", "Cada producto puede tener el suyo al editarlo", "number")}
+    <div class="box"><h3>${ic("badge-percent")}Precios y entrega</h3><p>El descuento de cada oferta se pone al editar el producto.</p><div class="form-grid">
       ${f("costoDelivery", "Costo del delivery", "", "number")}
       ${f("moneda", "Moneda", "Ej: RD$")}
     </div></div>
@@ -874,6 +877,12 @@ document.addEventListener("change", async (e) => {
       const key = `${f}:${id}`, now = Date.now();
       if (now - (lastToggle[key] || 0) < 800) { t.checked = !t.checked; return; }
       lastToggle[key] = now;
+    }
+    // Para poner en oferta un producto que nunca tuvo descuento, se pregunta el porciento
+    if (f === "oferta" && t.checked && !db.productos.find((p) => p.id === id)?.descuento) {
+      const n = Math.round(Number(prompt("¿Qué porciento de descuento tendrá esta oferta? (1 a 90)", "5")));
+      if (!(n >= 1 && n <= 90)) { t.checked = false; if (n) toast("El descuento debe ser de 1 a 90%", "alert-triangle"); return; }
+      return patchProduct(id, { oferta: true, descuento: n });
     }
     const patch = f === "precio" ? { precio: Math.max(0, Number(t.value) || 0) } : f === "stock" ? { stock: Math.max(0, Math.floor(Number(t.value) || 0)) }
       : f === "oferta" ? { oferta: t.checked } : { oculto: !t.checked };
